@@ -3,7 +3,7 @@ import WindowResize from "three-window-resize";
 import Keyboard from "./keyboard";
 
 const appEl = document.querySelector(".app");
-const fieldOfView = 45;
+const fieldOfView = 55;
 const drawDistance = 1000;
 
 let renderer, camera, scene, light, keyboard;
@@ -26,10 +26,11 @@ function init() {
   scene = new THREE.Scene();
 
   keyboard = new Keyboard();
-  keyboard.position.x = keyboard.boundingBox.min.x - keyboard.boundingBox.max.x / 2; // Center it!
+  keyboard.position.x = (keyboard.boundingBox.min.x - keyboard.boundingBox.max.x) / 2; // Center it!
   keyboard.position.y = 0;
-  keyboard.position.z = 0;
+  keyboard.position.z = keyboard.boundingBox.max.z;
   keyboard.rotation.x = Math.PI / 3;
+  keyboard.addClickListener(camera);
   scene.add(keyboard);
 
   light = new THREE.DirectionalLight("#ffffff");
