@@ -7,3 +7,21 @@ body, .app {
   overflow: hidden;
   background: #eee;
 }
+
+.fork {
+  img {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 48em) {
+  .fork {
+    img {
+      display: inherit;
+      position: absolute;
+      top: 0;
+      right: 0;
+      border: 0;
+    }
+  }
+}
