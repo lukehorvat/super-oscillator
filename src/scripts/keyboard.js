@@ -2,12 +2,12 @@ import * as THREE from "three";
 import oscillators from "web-audio-oscillators";
 import teoria from "teoria";
 
-const keyGap = 4;
-const keyWidth = 40;
-const whiteKeyHeight = 30;
-const whiteKeyDepth = 260;
+const keyGap = 3;
+const keyWidth = 20;
+const whiteKeyHeight = 20;
+const whiteKeyDepth = 120;
 const blackKeyHeight = whiteKeyHeight * 1.5;
-const blackKeyDepth = whiteKeyDepth / 1.5;
+const blackKeyDepth = whiteKeyDepth / 1.6;
 
 export default class extends THREE.Group {
   constructor(options = {}) {
@@ -26,16 +26,22 @@ export default class extends THREE.Group {
 
       if (note.accidental()) {
         key.position.z = -(whiteKeyDepth - blackKeyDepth) / 2;
-        key.geometry = new THREE.BoxGeometry(keyWidth, blackKeyHeight, blackKeyDepth);
         key.material = new THREE.MeshPhysicalMaterial({ color: "#000000", reflectivity: 1, emissive: "#222222", emissiveIntensity: 1.3 });
-
-        // TODO: use a more complicated mesh for black keys.
+        key.geometry = new THREE.BoxGeometry(keyWidth, blackKeyHeight, blackKeyDepth);
       } else {
         key.position.z = 0;
-        key.geometry = new THREE.BoxGeometry(keyWidth, whiteKeyHeight, whiteKeyDepth);
         key.material = new THREE.MeshPhysicalMaterial({ color: "#ffffff", reflectivity: 1, emissive: "#aaaaaa", emissiveIntensity: 1.3 });
+        key.geometry = new THREE.BoxGeometry(keyWidth, whiteKeyHeight, whiteKeyDepth);
 
-        // TODO: add extra boxes to mesh for white keys.
+        let adjacentNotes = [].concat(notes[semitone - 1] || [], notes[semitone + 1] || []);
+        adjacentNotes.filter(adjacentNote => adjacentNote.accidental()).forEach(adjacentNote => {
+          let mesh = new THREE.Mesh();
+          mesh.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), whiteKeyHeight, whiteKeyDepth - blackKeyDepth - keyGap);
+          mesh.position.x = ((keyWidth / 2) + (mesh.geometry.parameters.width / 2)) * teoria.interval(note, adjacentNote).semitones();
+          mesh.position.y = 0;
+          mesh.position.z = (whiteKeyDepth / 2) - (mesh.geometry.parameters.depth / 2);
+          key.geometry.mergeMesh(mesh);
+        });
       }
 
       this.add(key);
