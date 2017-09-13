@@ -3,7 +3,7 @@ import WindowResize from "three-window-resize";
 import Keyboard from "./keyboard";
 
 const appEl = document.querySelector(".app");
-const fieldOfView = 55;
+const fieldOfView = 70;
 const drawDistance = 1000;
 
 let renderer, camera, scene, light, keyboard;

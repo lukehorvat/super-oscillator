@@ -4,6 +4,7 @@
     "start": "./node_modules/.bin/gulp watch"
   },
   "dependencies": {
+    "teoria": "2.5.0",
     "three": "0.86.0",
     "three-window-resize": "1.0.4",
     "web-audio-oscillators": "1.0.0"
