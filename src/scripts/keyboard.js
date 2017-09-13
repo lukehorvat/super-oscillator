@@ -76,6 +76,7 @@ export default class extends THREE.Group {
       if (key) {
         key.position.y += whiteKeyHeight / 2;
         key.userData.oscillator.stop();
+        key = null;
       }
     });
   }
