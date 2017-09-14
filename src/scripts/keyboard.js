@@ -58,10 +58,6 @@ export default class extends THREE.Group {
     this.reverb.dry.value = 0.6;
   }
 
-  get boundingBox() {
-    return new THREE.Box3().setFromObject(this);
-  }
-
   addClickListener(camera) {
     let key, oscillator;
 

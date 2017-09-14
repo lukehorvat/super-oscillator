@@ -3,8 +3,6 @@ import WindowResize from "three-window-resize";
 import Keyboard from "./keyboard";
 
 const appEl = document.querySelector(".app");
-const fieldOfView = 40;
-const drawDistance = 1000;
 
 let renderer, camera, scene, light, keyboard;
 
@@ -16,10 +14,10 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   appEl.appendChild(renderer.domElement);
 
-  camera = new THREE.PerspectiveCamera(fieldOfView, window.innerWidth / window.innerHeight, 1, drawDistance);
+  camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
   camera.position.x = 0;
   camera.position.y = 0;
-  camera.position.z = drawDistance;
+  camera.position.z = 1300;
 
   WindowResize(renderer, camera); // Automatically handle window resize events.
 
@@ -28,7 +26,7 @@ function init() {
   keyboard = new Keyboard();
   keyboard.position.x = 0;
   keyboard.position.y = 600;
-  keyboard.position.z = keyboard.boundingBox.max.z;
+  keyboard.position.z = 0;
   keyboard.addClickListener(camera);
   scene.add(keyboard);
 
