@@ -27,9 +27,8 @@ function init() {
 
   keyboard = new Keyboard();
   keyboard.position.x = (keyboard.boundingBox.min.x - keyboard.boundingBox.max.x) / 2; // Center it!
-  keyboard.position.y = 0;
+  keyboard.position.y = 600;
   keyboard.position.z = keyboard.boundingBox.max.z;
-  keyboard.rotation.x = Math.PI / 3;
   keyboard.addClickListener(camera);
   scene.add(keyboard);
 
@@ -38,7 +37,16 @@ function init() {
 }
 
 function render() {
+  // Queue up the next render.
   requestAnimationFrame(render);
+
+  if (keyboard.position.y > 0) {
+    // Move keyboard until it reaches its resting position.
+    keyboard.position.y -= 4;
+  } else if (keyboard.rotation.x < Math.PI / 3) {
+    // Rotate keyboard until it reaches its resting position.
+    keyboard.rotation.x += Math.PI / 300;
+  }
 
   // Render the scene!
   renderer.render(scene, camera);
