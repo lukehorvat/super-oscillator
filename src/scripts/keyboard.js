@@ -18,11 +18,12 @@ export default class extends THREE.Group {
     let lastNote = teoria.note(options.lastNote || "B5");
     let semitones = teoria.interval(firstNote, lastNote).semitones() + 1;
     let notes = Array.from({ length: semitones }, (_, semitone) => teoria.note.fromKey(firstNote.key() + semitone));
+    let allKeysWidth = ((keyWidth + keyGap) * notes.length) - keyGap;
 
     notes.forEach((note, semitone) => {
       let key = new THREE.Mesh();
       key.userData.frequency = note.fq();
-      key.position.x = (keyWidth + keyGap) * semitone;
+      key.position.x = -(allKeysWidth / 2) + (keyWidth / 2) + ((keyWidth + keyGap) * semitone);
       key.position.y = 0;
 
       if (note.accidental()) {

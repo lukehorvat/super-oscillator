@@ -26,7 +26,7 @@ function init() {
   scene = new THREE.Scene();
 
   keyboard = new Keyboard();
-  keyboard.position.x = (keyboard.boundingBox.min.x - keyboard.boundingBox.max.x) / 2; // Center it!
+  keyboard.position.x = 0;
   keyboard.position.y = 600;
   keyboard.position.z = keyboard.boundingBox.max.z;
   keyboard.addClickListener(camera);
