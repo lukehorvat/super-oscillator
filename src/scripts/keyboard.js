@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import oscillators from "web-audio-oscillators";
+import Reverb from "soundbank-reverb";
 import teoria from "teoria";
 
 const keyGap = 3;
@@ -20,7 +21,7 @@ export default class extends THREE.Group {
 
     notes.forEach((note, semitone) => {
       let key = new THREE.Mesh();
-      key.userData.note = note;
+      key.userData.frequency = note.fq();
       key.position.x = (keyWidth + keyGap) * semitone;
       key.position.y = 0;
 
@@ -47,7 +48,13 @@ export default class extends THREE.Group {
       this.add(key);
     });
 
-    this.context = new (window.AudioContext || window.webkitAudioContext)();
+    this.audioContext = options.audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    this.gain = this.audioContext.createGain();
+    this.gain.gain.value = 0.2; // TODO: Add UI control for this.
+    this.reverb = Reverb(this.audioContext);
+    this.reverb.time = 1;
+    this.reverb.wet.value = 0.8;
+    this.reverb.dry.value = 0.6;
   }
 
   get boundingBox() {
@@ -55,7 +62,7 @@ export default class extends THREE.Group {
   }
 
   addClickListener(camera) {
-    let key;
+    let key, oscillator;
 
     window.addEventListener("mousedown", () => {
       let vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
@@ -65,18 +72,19 @@ export default class extends THREE.Group {
       if (intersects.length > 0) {
         key = intersects[0].object;
         key.position.y -= whiteKeyHeight / 2;
-        key.userData.oscillator = oscillators.organ(this.context);
-        key.userData.oscillator.frequency.value = key.userData.note.fq();
-        key.userData.oscillator.connect(this.context.destination);
-        key.userData.oscillator.start();
+        oscillator = oscillators.organ(this.audioContext);
+        oscillator.frequency.value = key.userData.frequency;
+        oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
+        oscillator.start();
       }
     });
 
     window.addEventListener("mouseup", () => {
       if (key) {
         key.position.y += whiteKeyHeight / 2;
-        key.userData.oscillator.stop();
         key = null;
+        oscillator.stop();
+        oscillator = null;
       }
     });
   }
