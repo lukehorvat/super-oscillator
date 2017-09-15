@@ -4,6 +4,7 @@ import Reverb from "soundbank-reverb";
 import teoria from "teoria";
 
 const keyGap = 3;
+const keyPressDepth = 10;
 const keyWidth = 20;
 const whiteKeyHeight = 20;
 const whiteKeyDepth = 120;
@@ -24,13 +25,14 @@ export default class extends THREE.Group {
       let key = new THREE.Mesh();
       key.userData.frequency = note.fq();
       key.position.x = -(allKeysWidth / 2) + (keyWidth / 2) + ((keyWidth + keyGap) * semitone);
-      key.position.y = 0;
 
       if (note.accidental()) {
-        key.position.z = -(whiteKeyDepth - blackKeyDepth) / 2;
+        key.position.y = (blackKeyHeight - whiteKeyHeight) / 2;
+        key.position.z = -(whiteKeyDepth / 2) + (blackKeyDepth / 2);
         key.material = new THREE.MeshPhysicalMaterial({ color: "#000000", reflectivity: 1, emissive: "#222222", emissiveIntensity: 1.3 });
         key.geometry = new THREE.BoxGeometry(keyWidth, blackKeyHeight, blackKeyDepth);
       } else {
+        key.position.y = 0;
         key.position.z = 0;
         key.material = new THREE.MeshPhysicalMaterial({ color: "#ffffff", reflectivity: 1, emissive: "#aaaaaa", emissiveIntensity: 1.3 });
         key.geometry = new THREE.BoxGeometry(keyWidth, whiteKeyHeight, whiteKeyDepth);
@@ -66,23 +68,23 @@ export default class extends THREE.Group {
       vector.unproject(camera);
       let raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
       let intersects = raycaster.intersectObjects(this.children);
-      if (intersects.length > 0) {
-        key = intersects[0].object;
-        key.position.y -= whiteKeyHeight / 2;
-        oscillator = oscillators.organ(this.audioContext);
-        oscillator.frequency.value = key.userData.frequency;
-        oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
-        oscillator.start();
-      }
+      if (intersects.length === 0) return;
+
+      key = intersects[0].object;
+      key.position.y -= keyPressDepth;
+      oscillator = oscillators.organ(this.audioContext);
+      oscillator.frequency.value = key.userData.frequency;
+      oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
+      oscillator.start();
     });
 
     window.addEventListener("mouseup", () => {
-      if (key) {
-        key.position.y += whiteKeyHeight / 2;
-        key = null;
-        oscillator.stop();
-        oscillator = null;
-      }
+      if (!key) return;
+
+      key.position.y += keyPressDepth;
+      key = null;
+      oscillator.stop();
+      oscillator = null;
     });
   }
 }

@@ -2,8 +2,6 @@ import * as THREE from "three";
 import WindowResize from "three-window-resize";
 import Keyboard from "./keyboard";
 
-const appEl = document.querySelector(".app");
-
 let renderer, camera, scene, light, keyboard;
 
 init();
@@ -12,7 +10,7 @@ render();
 function init() {
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  appEl.appendChild(renderer.domElement);
+  document.querySelector(".app").appendChild(renderer.domElement);
 
   camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
   camera.position.x = 0;
