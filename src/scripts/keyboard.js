@@ -3,13 +3,15 @@ import oscillators from "web-audio-oscillators";
 import Reverb from "soundbank-reverb";
 import teoria from "teoria";
 
-const keyGap = 3;
-const keyPressDepth = 10;
-const keyWidth = 20;
-const whiteKeyHeight = 20;
-const whiteKeyDepth = 120;
-const blackKeyHeight = whiteKeyHeight * 1.5;
+const keyboardWidth = 1100;
+const keyboardHeight = 30;
+const keyboardDepth = 120;
+const whiteKeyHeight = keyboardHeight / 1.5;
+const whiteKeyDepth = keyboardDepth;
+const blackKeyHeight = keyboardHeight;
 const blackKeyDepth = whiteKeyDepth / 1.6;
+const keyPressHeight = keyboardHeight / 3;
+const keyGap = 3;
 
 export default class extends THREE.Group {
   constructor(options = {}) {
@@ -19,12 +21,12 @@ export default class extends THREE.Group {
     let lastNote = teoria.note(options.lastNote || "B5");
     let semitones = teoria.interval(firstNote, lastNote).semitones() + 1;
     let notes = Array.from({ length: semitones }, (_, semitone) => teoria.note.fromKey(firstNote.key() + semitone));
-    let allKeysWidth = ((keyWidth + keyGap) * notes.length) - keyGap;
+    let keyWidth = ((keyboardWidth - ((notes.length - 1) * keyGap)) / notes.length);
 
     notes.forEach((note, semitone) => {
       let key = new THREE.Mesh();
       key.userData.frequency = note.fq();
-      key.position.x = -(allKeysWidth / 2) + (keyWidth / 2) + ((keyWidth + keyGap) * semitone);
+      key.position.x = -(keyboardWidth / 2) + (keyWidth / 2) + ((keyWidth + keyGap) * semitone);
 
       if (note.accidental()) {
         key.position.y = (blackKeyHeight - whiteKeyHeight) / 2;
@@ -71,7 +73,7 @@ export default class extends THREE.Group {
       if (intersects.length === 0) return;
 
       key = intersects[0].object;
-      key.position.y -= keyPressDepth;
+      key.position.y -= keyPressHeight;
       oscillator = oscillators.organ(this.audioContext);
       oscillator.frequency.value = key.userData.frequency;
       oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
@@ -81,7 +83,7 @@ export default class extends THREE.Group {
     window.addEventListener("mouseup", () => {
       if (!key) return;
 
-      key.position.y += keyPressDepth;
+      key.position.y += keyPressHeight;
       key = null;
       oscillator.stop();
       oscillator = null;
