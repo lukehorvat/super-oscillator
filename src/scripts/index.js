@@ -28,7 +28,10 @@ function init() {
   keyboard.addClickListener(camera);
   scene.add(keyboard);
 
-  light = new THREE.DirectionalLight("#ffffff");
+  light = new THREE.SpotLight("#aaaaaa");
+  light.position.x = 0;
+  light.position.y = 1000;
+  light.position.z = 0;
   scene.add(light);
 }
 
@@ -39,7 +42,7 @@ function render() {
   if (keyboard.position.y > 0) {
     // Move keyboard until it reaches its resting position.
     keyboard.position.y -= 4;
-  } else if (keyboard.rotation.x < Math.PI / 3) {
+  } else if (keyboard.rotation.x < Math.PI / 4) {
     // Rotate keyboard until it reaches its resting position.
     keyboard.rotation.x += Math.PI / 300;
   }

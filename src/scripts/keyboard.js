@@ -3,13 +3,13 @@ import oscillators from "web-audio-oscillators";
 import Reverb from "soundbank-reverb";
 import teoria from "teoria";
 
-const keyGap = 3;
+const keyGap = 2;
 const keyboardWidth = 1100;
 const bottomBoardWidth = keyboardWidth;
 const backBoardWidth = keyboardWidth;
 const leftBoardWidth = keyboardWidth / 25;
 const rightBoardWidth = leftBoardWidth;
-const keyboardHeight = 80;
+const keyboardHeight = 70;
 const bottomBoardHeight = keyboardHeight / 3;
 const backBoardHeight = keyboardHeight - bottomBoardHeight;
 const leftBoardHeight = backBoardHeight;
@@ -17,7 +17,7 @@ const rightBoardHeight = leftBoardHeight;
 const blackKeyHeight = (keyboardHeight - bottomBoardHeight - keyGap) / 1.3;
 const whiteKeyHeight = blackKeyHeight / 1.5;
 const keyPressHeight = keyboardHeight - bottomBoardHeight - keyGap - blackKeyHeight;
-const keyboardDepth = 200;
+const keyboardDepth = 180;
 const bottomBoardDepth = keyboardDepth;
 const backBoardDepth = keyboardDepth / 3;
 const leftBoardDepth = keyboardDepth - backBoardDepth;
@@ -29,7 +29,7 @@ export default class extends THREE.Group {
   constructor(options = {}) {
     super();
 
-    let boardMaterial = new THREE.MeshPhysicalMaterial({ color: options.color || "#FFFF00", reflectivity: 0.4, emissive: "#FFFF00", emissiveIntensity: 0.3, metalness: 0, side: THREE.DoubleSide });
+    let boardMaterial = new THREE.MeshPhysicalMaterial({ color: options.color || "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
     let firstNote = teoria.note(options.firstNote || "C2");
     let lastNote = teoria.note(options.lastNote || "B5");
 
@@ -73,44 +73,50 @@ export default class extends THREE.Group {
     let angle = Math.asin(leftBoardDepth / hypotenuse);
 
     let mesh = new THREE.Mesh();
-    mesh.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+    mesh.material = boardMaterial;
+    mesh.geometry = new THREE.Geometry();
+    mesh.position.x = -(keyboardWidth / 2);
+    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
+    mesh.position.z = (keyboardDepth / 2);
+
+    let mesh2 = new THREE.Mesh();
+    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
       new THREE.Vector2(0, 0),
       new THREE.Vector2(leftBoardWidth, 0),
       new THREE.Vector2(leftBoardWidth, hypotenuse),
       new THREE.Vector2(0, hypotenuse),
     ]));
-    mesh.material = boardMaterial;
-    mesh.position.x = -(keyboardWidth / 2);
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh.position.z = (keyboardDepth / 2);
-    mesh.rotation.x = -angle;
-    this.add(mesh);
-
-    let mesh2 = new THREE.Mesh();
-    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(leftBoardDepth, 0),
-      new THREE.Vector2(0, leftBoardHeight)
-    ]));
-    mesh2.material = boardMaterial;
-    mesh2.position.x = -(keyboardWidth / 2);
-    mesh2.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh2.position.z = -(keyboardDepth / 2) + backBoardDepth;
-    mesh2.rotation.y = -Math.PI / 2;
-    this.add(mesh2);
+    mesh2.position.x = 0;
+    mesh2.position.y = 0;
+    mesh2.position.z = 0;
+    mesh2.rotation.x = -angle;
+    mesh.geometry.mergeMesh(mesh2);
 
     let mesh3 = new THREE.Mesh();
     mesh3.geometry = new THREE.ShapeGeometry(new THREE.Shape([
       new THREE.Vector2(0, 0),
       new THREE.Vector2(leftBoardDepth, 0),
-      new THREE.Vector2(0, leftBoardHeight)
+      new THREE.Vector2(0, leftBoardHeight),
     ]));
-    mesh3.material = boardMaterial;
-    mesh3.position.x = -(keyboardWidth / 2) + leftBoardWidth;
-    mesh3.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh3.position.z = -(keyboardDepth / 2) + backBoardDepth;
+    mesh3.position.x = 0;
+    mesh3.position.y = 0;
+    mesh3.position.z = -leftBoardDepth;
     mesh3.rotation.y = -Math.PI / 2;
-    this.add(mesh3);
+    mesh.geometry.mergeMesh(mesh3);
+
+    let mesh4 = new THREE.Mesh();
+    mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(leftBoardDepth, 0),
+      new THREE.Vector2(0, leftBoardHeight),
+    ]));
+    mesh4.position.x = leftBoardWidth;
+    mesh4.position.y = 0;
+    mesh4.position.z = -leftBoardDepth;
+    mesh4.rotation.y = -Math.PI / 2;
+    mesh.geometry.mergeMesh(mesh4);
+
+    this.add(mesh);
   }
 
   createRightBoard(boardMaterial) {
@@ -118,44 +124,50 @@ export default class extends THREE.Group {
     let angle = Math.asin(rightBoardDepth / hypotenuse);
 
     let mesh = new THREE.Mesh();
-    mesh.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+    mesh.material = boardMaterial;
+    mesh.geometry = new THREE.Geometry();
+    mesh.position.x = keyboardWidth / 2;
+    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
+    mesh.position.z = (keyboardDepth / 2);
+
+    let mesh2 = new THREE.Mesh();
+    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
       new THREE.Vector2(0, 0),
       new THREE.Vector2(-rightBoardWidth, 0),
       new THREE.Vector2(-rightBoardWidth, hypotenuse),
       new THREE.Vector2(0, hypotenuse),
     ]));
-    mesh.material = boardMaterial;
-    mesh.position.x = keyboardWidth / 2;
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh.position.z = (keyboardDepth / 2);
-    mesh.rotation.x = -angle;
-    this.add(mesh);
-
-    let mesh2 = new THREE.Mesh();
-    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(rightBoardDepth, 0),
-      new THREE.Vector2(0, rightBoardHeight)
-    ]));
-    mesh2.material = boardMaterial;
-    mesh2.position.x = keyboardWidth / 2;
-    mesh2.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh2.position.z = -(keyboardDepth / 2) + backBoardDepth;
-    mesh2.rotation.y = -Math.PI / 2;
-    this.add(mesh2);
+    mesh2.position.x = 0;
+    mesh2.position.y = 0;
+    mesh2.position.z = 0;
+    mesh2.rotation.x = -angle;
+    mesh.geometry.mergeMesh(mesh2);
 
     let mesh3 = new THREE.Mesh();
     mesh3.geometry = new THREE.ShapeGeometry(new THREE.Shape([
       new THREE.Vector2(0, 0),
       new THREE.Vector2(rightBoardDepth, 0),
-      new THREE.Vector2(0, rightBoardHeight)
+      new THREE.Vector2(0, rightBoardHeight),
     ]));
-    mesh3.material = boardMaterial;
-    mesh3.position.x = (keyboardWidth / 2) - rightBoardWidth;
-    mesh3.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh3.position.z = -(keyboardDepth / 2) + backBoardDepth;
+    mesh3.position.x = 0;
+    mesh3.position.y = 0;
+    mesh3.position.z = -rightBoardDepth;
     mesh3.rotation.y = -Math.PI / 2;
-    this.add(mesh3);
+    mesh.geometry.mergeMesh(mesh3);
+
+    let mesh4 = new THREE.Mesh();
+    mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(rightBoardDepth, 0),
+      new THREE.Vector2(0, rightBoardHeight),
+    ]));
+    mesh4.position.x = -rightBoardWidth;
+    mesh4.position.y = 0;
+    mesh4.position.z = -rightBoardDepth;
+    mesh4.rotation.y = -Math.PI / 2;
+    mesh.geometry.mergeMesh(mesh4);
+
+    this.add(mesh);
   }
 
   createKeys(firstNote, lastNote) {
@@ -174,12 +186,12 @@ export default class extends THREE.Group {
     if (note.accidental()) {
       mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + keyGap + keyPressHeight + (blackKeyHeight / 2);
       mesh.position.z = -(keyboardDepth / 2) + backBoardDepth + (blackKeyDepth / 2);
-      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#000000", reflectivity: 1, emissive: "#999999", emissiveIntensity: 0.3 });
+      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#333333", emissive: "#000000", reflectivity: 0.1, metalness: 0.1 });
       mesh.geometry = new THREE.BoxGeometry(keyWidth, blackKeyHeight, blackKeyDepth);
     } else {
       mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + keyGap + keyPressHeight + (whiteKeyHeight / 2);
       mesh.position.z = -(keyboardDepth / 2) + backBoardDepth + (whiteKeyDepth / 2);
-      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#ffffff", reflectivity: 1, emissive: "#999999", emissiveIntensity: 1.3 });
+      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#dddddd", emissive: "#888888", reflectivity: 0.5, metalness: 0.5 });
       mesh.geometry = new THREE.BoxGeometry(keyWidth, whiteKeyHeight, whiteKeyDepth);
 
       let previousNote = notes[semitone - 1];
