@@ -1,48 +1,11 @@
 import * as THREE from "three";
 import oscillators from "web-audio-oscillators";
 import Reverb from "soundbank-reverb";
-import teoria from "teoria";
-
-const keyGap = 2;
-const keyboardWidth = 1100;
-const bottomBoardWidth = keyboardWidth;
-const backBoardWidth = keyboardWidth;
-const leftBoardWidth = keyboardWidth / 25;
-const rightBoardWidth = leftBoardWidth;
-const oscillatorButtonWidth = backBoardWidth / 10;
-const keyboardHeight = 70;
-const bottomBoardHeight = keyboardHeight / 3;
-const oscillatorButtonHeight = 6;
-const oscillatorButtonPressHeight = 2;
-const backBoardHeight = keyboardHeight - oscillatorButtonHeight - bottomBoardHeight;
-const leftBoardHeight = backBoardHeight;
-const rightBoardHeight = leftBoardHeight;
-const blackKeyHeight = (keyboardHeight - bottomBoardHeight - keyGap) / 1.3;
-const whiteKeyHeight = blackKeyHeight / 1.5;
-const keyPressHeight = keyboardHeight - bottomBoardHeight - keyGap - blackKeyHeight;
-const keyboardDepth = 180;
-const bottomBoardDepth = keyboardDepth;
-const backBoardDepth = keyboardDepth / 3;
-const leftBoardDepth = keyboardDepth - backBoardDepth;
-const rightBoardDepth = leftBoardDepth;
-const oscillatorButtonDepth = backBoardDepth / 2;
-const whiteKeyDepth = keyboardDepth - backBoardDepth - keyGap;
-const blackKeyDepth = whiteKeyDepth / 1.6;
+import tonal from "tonal";
 
 export default class extends THREE.Group {
   constructor() {
     super();
-
-    let boardMaterial = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
-    let firstNote = teoria.note("C2");
-    let lastNote = teoria.note("B5");
-
-    this.createOscillatorButton();
-    this.createBottomBoard(boardMaterial);
-    this.createBackBoard(boardMaterial);
-    this.createLeftBoard(boardMaterial);
-    this.createRightBoard(boardMaterial);
-    this.createKeys(firstNote, lastNote);
 
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.gain = this.audioContext.createGain();
@@ -51,193 +14,149 @@ export default class extends THREE.Group {
     this.reverb.time = 1;
     this.reverb.wet.value = 0.8;
     this.reverb.dry.value = 0.6;
-    this.oscillatorIndex = 1;
+    this.oscillatorIndex = Object.keys(oscillators).indexOf("organ");
+
+    this.createBottomBoard();
+    this.createBackBoard();
+    this.createLeftBoard();
+    this.createRightBoard();
+    this.createOscillatorButton();
+    this.createKeys();
+  }
+
+  createBottomBoard() {
+    this.bottomBoard = new THREE.Mesh();
+    this.bottomBoard.material = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
+    this.bottomBoard.geometry = new THREE.BoxGeometry(1100, 25, 185);
+    this.bottomBoard.bbox.centerX = 0;
+    this.bottomBoard.bbox.centerY = 0;
+    this.bottomBoard.bbox.centerZ = 0;
+    this.add(this.bottomBoard);
+  }
+
+  createBackBoard() {
+    this.backBoard = new THREE.Mesh();
+    this.backBoard.material = this.bottomBoard.material;
+    this.backBoard.geometry = new THREE.BoxGeometry(this.bottomBoard.bbox.width, 70, this.bottomBoard.bbox.depth / 3);
+    this.backBoard.bbox.centerX = this.bottomBoard.bbox.centerX;
+    this.backBoard.bbox.minY = this.bottomBoard.bbox.maxY;
+    this.backBoard.bbox.minZ = this.bottomBoard.bbox.minZ;
+    this.add(this.backBoard);
+  }
+
+  createLeftBoard() {
+    this.leftBoard = new THREE.Mesh();
+    this.leftBoard.material = this.bottomBoard.material;
+    this.leftBoard.geometry = new THREE.Geometry();
+
+    let width = this.bottomBoard.bbox.width / 25;
+    let height = this.backBoard.bbox.height;
+    let depth = this.bottomBoard.bbox.depth - this.backBoard.bbox.depth;
+    let hypotenuse = Math.hypot(height, depth);
+    let angle = Math.asin(depth / hypotenuse);
+
+    let mesh1 = new THREE.Mesh();
+    mesh1.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(width, 0),
+      new THREE.Vector2(width, hypotenuse),
+      new THREE.Vector2(0, hypotenuse),
+    ]));
+    mesh1.bbox.minX = 0;
+    mesh1.bbox.minY = 0;
+    mesh1.bbox.maxZ = depth;
+    mesh1.rotation.x = -angle;
+    this.leftBoard.geometry.mergeMesh(mesh1);
+
+    let mesh2 = new THREE.Mesh();
+    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(depth, 0),
+      new THREE.Vector2(0, height),
+    ]));
+    mesh2.bbox.minX = 0;
+    mesh2.bbox.minY = 0;
+    mesh2.bbox.minZ = 0;
+    mesh2.rotation.y = -Math.PI / 2;
+    this.leftBoard.geometry.mergeMesh(mesh2);
+
+    let mesh3 = mesh2.clone();
+    mesh3.bbox.maxX = width;
+    this.leftBoard.geometry.mergeMesh(mesh3);
+
+    this.leftBoard.bbox.minX = this.bottomBoard.bbox.minX;
+    this.leftBoard.bbox.minY = this.bottomBoard.bbox.maxY;
+    this.leftBoard.bbox.maxZ = this.bottomBoard.bbox.maxZ;
+    this.add(this.leftBoard);
+  }
+
+  createRightBoard() {
+    this.rightBoard = this.leftBoard.clone();
+    this.rightBoard.bbox.maxX = this.bottomBoard.bbox.maxX;
+    this.add(this.rightBoard);
   }
 
   createOscillatorButton() {
-    let mesh = new THREE.Mesh();
-    mesh.name = "oscillator-button";
-    mesh.material = new THREE.MeshPhysicalMaterial({ color: "#555555", reflectivity: 1, metalness: 1 });
-    mesh.geometry = new THREE.BoxGeometry(oscillatorButtonWidth, oscillatorButtonHeight, oscillatorButtonDepth);
-    mesh.position.x = (keyboardWidth / 2) - (backBoardWidth / 2);
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + backBoardHeight + (oscillatorButtonHeight / 2);
-    mesh.position.z = -(keyboardDepth / 2) + (backBoardDepth / 2);
-    this.add(mesh);
+    this.oscillatorButton = new THREE.Mesh();
+    this.oscillatorButton.material = new THREE.MeshPhysicalMaterial({ color: "#555555", reflectivity: 1, metalness: 1 });
+    this.oscillatorButton.geometry = new THREE.BoxGeometry(this.backBoard.bbox.width / 20, 8, this.backBoard.bbox.depth / 2);
+    this.oscillatorButton.bbox.minX = this.leftBoard.bbox.maxX;
+    this.oscillatorButton.bbox.minY = this.backBoard.bbox.maxY;
+    this.oscillatorButton.bbox.centerZ = this.backBoard.bbox.centerZ;
+    this.oscillatorButton.userData.pressHeight = this.oscillatorButton.bbox.height / 2;
+    this.add(this.oscillatorButton);
   }
 
-  createBottomBoard(boardMaterial) {
-    let mesh = new THREE.Mesh();
-    mesh.name = "bottom-board";
-    mesh.material = boardMaterial;
-    mesh.geometry = new THREE.BoxGeometry(bottomBoardWidth, bottomBoardHeight, bottomBoardDepth);
-    mesh.position.x = -(keyboardWidth / 2) + (bottomBoardWidth / 2);
-    mesh.position.y = -(keyboardHeight / 2) + (bottomBoardHeight / 2);
-    mesh.position.z = -(keyboardDepth / 2) + (bottomBoardDepth / 2);
-    this.add(mesh);
+  createKeys() {
+    this.keys = tonal.range.chromatic("C2, B5").map(::this.createKey);
   }
 
-  createBackBoard(boardMaterial) {
-    let mesh = new THREE.Mesh();
-    mesh.name = "back-board";
-    mesh.material = boardMaterial;
-    mesh.geometry = new THREE.BoxGeometry(backBoardWidth, backBoardHeight, backBoardDepth);
-    mesh.position.x = -(keyboardWidth / 2) + (backBoardWidth / 2);
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + (backBoardHeight / 2);
-    mesh.position.z = -(keyboardDepth / 2) + (backBoardDepth / 2);
-    this.add(mesh);
-  }
+  createKey(note, index, notes) {
+    let key = new THREE.Mesh();
+    let keyGap = 2;
+    let keyWidth = (this.backBoard.bbox.width - this.leftBoard.bbox.width - this.rightBoard.bbox.width - ((notes.length + 1) * keyGap)) / notes.length;
+    let keyWhiteHeight = 20;
+    let keyWhiteDepth = 120;
+    let keyBlackHeight = keyWhiteHeight * 1.75;
+    let keyBlackDepth = keyWhiteDepth * 0.65;
+    let keyPressHeight = keyWhiteHeight / 2;
 
-  createLeftBoard(boardMaterial) {
-    let hypotenuse = Math.hypot(leftBoardHeight, leftBoardDepth);
-    let angle = Math.asin(leftBoardDepth / hypotenuse);
-
-    let mesh = new THREE.Mesh();
-    mesh.name = "left-board";
-    mesh.material = boardMaterial;
-    mesh.geometry = new THREE.Geometry();
-    mesh.position.x = -(keyboardWidth / 2);
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh.position.z = (keyboardDepth / 2);
-
-    let mesh2 = new THREE.Mesh();
-    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(leftBoardWidth, 0),
-      new THREE.Vector2(leftBoardWidth, hypotenuse),
-      new THREE.Vector2(0, hypotenuse),
-    ]));
-    mesh2.position.x = 0;
-    mesh2.position.y = 0;
-    mesh2.position.z = 0;
-    mesh2.rotation.x = -angle;
-    mesh.geometry.mergeMesh(mesh2);
-
-    let mesh3 = new THREE.Mesh();
-    mesh3.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(leftBoardDepth, 0),
-      new THREE.Vector2(0, leftBoardHeight),
-    ]));
-    mesh3.position.x = 0;
-    mesh3.position.y = 0;
-    mesh3.position.z = -leftBoardDepth;
-    mesh3.rotation.y = -Math.PI / 2;
-    mesh.geometry.mergeMesh(mesh3);
-
-    let mesh4 = new THREE.Mesh();
-    mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(leftBoardDepth, 0),
-      new THREE.Vector2(0, leftBoardHeight),
-    ]));
-    mesh4.position.x = leftBoardWidth;
-    mesh4.position.y = 0;
-    mesh4.position.z = -leftBoardDepth;
-    mesh4.rotation.y = -Math.PI / 2;
-    mesh.geometry.mergeMesh(mesh4);
-
-    this.add(mesh);
-  }
-
-  createRightBoard(boardMaterial) {
-    let hypotenuse = Math.hypot(rightBoardHeight, rightBoardDepth);
-    let angle = Math.asin(rightBoardDepth / hypotenuse);
-
-    let mesh = new THREE.Mesh();
-    mesh.name = "right-board";
-    mesh.material = boardMaterial;
-    mesh.geometry = new THREE.Geometry();
-    mesh.position.x = keyboardWidth / 2;
-    mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight;
-    mesh.position.z = (keyboardDepth / 2);
-
-    let mesh2 = new THREE.Mesh();
-    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(-rightBoardWidth, 0),
-      new THREE.Vector2(-rightBoardWidth, hypotenuse),
-      new THREE.Vector2(0, hypotenuse),
-    ]));
-    mesh2.position.x = 0;
-    mesh2.position.y = 0;
-    mesh2.position.z = 0;
-    mesh2.rotation.x = -angle;
-    mesh.geometry.mergeMesh(mesh2);
-
-    let mesh3 = new THREE.Mesh();
-    mesh3.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(rightBoardDepth, 0),
-      new THREE.Vector2(0, rightBoardHeight),
-    ]));
-    mesh3.position.x = 0;
-    mesh3.position.y = 0;
-    mesh3.position.z = -rightBoardDepth;
-    mesh3.rotation.y = -Math.PI / 2;
-    mesh.geometry.mergeMesh(mesh3);
-
-    let mesh4 = new THREE.Mesh();
-    mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
-      new THREE.Vector2(0, 0),
-      new THREE.Vector2(rightBoardDepth, 0),
-      new THREE.Vector2(0, rightBoardHeight),
-    ]));
-    mesh4.position.x = -rightBoardWidth;
-    mesh4.position.y = 0;
-    mesh4.position.z = -rightBoardDepth;
-    mesh4.rotation.y = -Math.PI / 2;
-    mesh.geometry.mergeMesh(mesh4);
-
-    this.add(mesh);
-  }
-
-  createKeys(firstNote, lastNote) {
-    let semitones = teoria.interval(firstNote, lastNote).semitones() + 1;
-    let notes = Array.from({ length: semitones }, (_, semitone) => teoria.note.fromKey(firstNote.key() + semitone));
-    notes.forEach(note => this.createKey(note, notes));
-  }
-
-  createKey(note, notes) {
-    let semitone = notes.indexOf(note);
-    let keyWidth = ((keyboardWidth - leftBoardWidth - rightBoardWidth - ((notes.length + 1) * keyGap)) / notes.length);
-    let mesh = new THREE.Mesh();
-    mesh.name = "key";
-    mesh.userData.frequency = note.fq();
-    mesh.position.x = -(keyboardWidth / 2) + leftBoardWidth + keyGap + (keyWidth / 2) + ((keyWidth + keyGap) * semitone);
-
-    if (note.accidental()) {
-      mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + keyGap + keyPressHeight + (blackKeyHeight / 2);
-      mesh.position.z = -(keyboardDepth / 2) + backBoardDepth + (blackKeyDepth / 2);
-      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#333333", emissive: "#000000", reflectivity: 0.1, metalness: 0.1 });
-      mesh.geometry = new THREE.BoxGeometry(keyWidth, blackKeyHeight, blackKeyDepth);
+    if (tonal.note.alt(note)) {
+      key.material = new THREE.MeshPhysicalMaterial({ color: "#333333", emissive: "#000000", reflectivity: 0.1, metalness: 0.1 });
+      key.geometry = new THREE.BoxGeometry(keyWidth, keyBlackHeight, keyBlackDepth);
     } else {
-      mesh.position.y = -(keyboardHeight / 2) + bottomBoardHeight + keyGap + keyPressHeight + (whiteKeyHeight / 2);
-      mesh.position.z = -(keyboardDepth / 2) + backBoardDepth + (whiteKeyDepth / 2);
-      mesh.material = new THREE.MeshPhysicalMaterial({ color: "#dddddd", emissive: "#888888", reflectivity: 0.5, metalness: 0.5 });
-      mesh.geometry = new THREE.BoxGeometry(keyWidth, whiteKeyHeight, whiteKeyDepth);
+      key.material = new THREE.MeshPhysicalMaterial({ color: "#dddddd", emissive: "#888888", reflectivity: 0.5, metalness: 0.5 });
+      key.geometry = new THREE.BoxGeometry(keyWidth, keyWhiteHeight, keyWhiteDepth);
 
-      let previousNote = notes[semitone - 1];
-      if (previousNote && previousNote.accidental()) {
-        let mesh2 = new THREE.Mesh();
-        mesh2.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), whiteKeyHeight, whiteKeyDepth - blackKeyDepth - keyGap);
-        mesh2.position.x = -(keyWidth / 2) - (mesh2.geometry.parameters.width / 2);
-        mesh2.position.y = 0;
-        mesh2.position.z = (whiteKeyDepth / 2) - (mesh2.geometry.parameters.depth / 2);
-        mesh.geometry.mergeMesh(mesh2);
+      let previousNote = notes[index - 1];
+      if (previousNote && tonal.note.alt(previousNote)) {
+        let mesh1 = new THREE.Mesh();
+        mesh1.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), key.bbox.height, keyWhiteDepth - keyBlackDepth - keyGap);
+        mesh1.bbox.maxX = key.bbox.minX;
+        mesh1.bbox.minY = key.bbox.minY;
+        mesh1.bbox.maxZ = key.bbox.maxZ;
+        key.geometry.mergeMesh(mesh1);
       }
 
-      let nextNote = notes[semitone + 1];
-      if (nextNote && nextNote.accidental()) {
-        let mesh3 = new THREE.Mesh();
-        mesh3.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), whiteKeyHeight, whiteKeyDepth - blackKeyDepth - keyGap);
-        mesh3.position.x = (keyWidth / 2) + (mesh3.geometry.parameters.width / 2);
-        mesh3.position.y = 0;
-        mesh3.position.z = (whiteKeyDepth / 2) - (mesh3.geometry.parameters.depth / 2);
-        mesh.geometry.mergeMesh(mesh3);
+      let nextNote = notes[index + 1];
+      if (nextNote && tonal.note.alt(nextNote)) {
+        let mesh2 = new THREE.Mesh();
+        mesh2.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), key.bbox.height, keyWhiteDepth - keyBlackDepth - keyGap);
+        mesh2.bbox.minX = key.bbox.maxX;
+        mesh2.bbox.minY = key.bbox.minY;
+        mesh2.bbox.maxZ = key.bbox.maxZ;
+        key.geometry.mergeMesh(mesh2);
       }
     }
 
-    this.add(mesh);
+    key.position.x = this.leftBoard.bbox.maxX + keyGap + (keyWidth / 2) + ((keyWidth + keyGap) * index);
+    key.bbox.minY = this.bottomBoard.bbox.maxY + keyGap + keyPressHeight;
+    key.bbox.minZ = this.backBoard.bbox.maxZ;
+    key.userData.pressHeight = keyPressHeight;
+    key.userData.frequency = tonal.note.freq(note);
+    this.add(key);
+
+    return key;
   }
 
   addClickListener(camera) {
@@ -251,35 +170,34 @@ export default class extends THREE.Group {
       if (intersects.length === 0) return;
       clickedObject = intersects[0].object;
 
-      switch (clickedObject.name) {
-        case "oscillator-button":
-          clickedObject.position.y -= oscillatorButtonPressHeight;
-          this.oscillatorIndex = this.oscillatorIndex < Object.entries(oscillators).length - 1 ? this.oscillatorIndex + 1 : 0;
-          break;
-        case "key":
-          clickedObject.position.y -= keyPressHeight;
-          oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
-          oscillator.frequency.value = clickedObject.userData.frequency;
-          oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
-          oscillator.start();
-          break;
+      if (clickedObject === this.oscillatorButton) {
+        this.oscillatorButton.bbox.minY -= this.oscillatorButton.userData.pressHeight;
+        this.oscillatorIndex = this.oscillatorIndex < Object.entries(oscillators).length - 1 ? this.oscillatorIndex + 1 : 0;
+      } else if (this.keys.includes(clickedObject)) {
+        clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
+        oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
+        oscillator.frequency.value = clickedObject.userData.frequency;
+        oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
+        oscillator.start();
       }
     });
 
     window.addEventListener("mouseup", () => {
       if (!clickedObject) return;
 
-      switch (clickedObject.name) {
-        case "oscillator-button":
-          clickedObject.position.y += oscillatorButtonPressHeight;
-          break;
-        case "key":
-          clickedObject.position.y += keyPressHeight;
-          oscillator.stop();
-          break;
+      if (clickedObject === this.oscillatorButton) {
+        this.oscillatorButton.bbox.minY += this.oscillatorButton.userData.pressHeight;
+      } else if (this.keys.includes(clickedObject)) {
+        clickedObject.bbox.minY += clickedObject.userData.pressHeight;
+        oscillator.stop();
       }
 
       clickedObject = null;
     });
   }
 }
+
+// Suppress false deprecation warnings when calling tonal.note.alt().
+// See: https://github.com/danigb/tonal/issues/38
+const { warn } = console;
+console.warn = function(msg) { !msg.includes("note.props() is deprecated.") && console::warn(...arguments) };

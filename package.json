@@ -5,9 +5,9 @@
   },
   "dependencies": {
     "soundbank-reverb": "1.1.2",
-    "teoria": "2.5.0",
     "three": "0.86.0",
     "three-window-resize": "1.0.4",
+    "tonal": "0.69.9",
     "web-audio-oscillators": "1.0.0"
   },
   "devDependencies": {

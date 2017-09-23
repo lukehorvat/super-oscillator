@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import WindowResize from "three-window-resize";
+import * as ThreeExtensions from "./three";
 import Keyboard from "./keyboard";
 
 let renderer, camera, scene, light, keyboard;
@@ -8,6 +9,8 @@ init();
 render();
 
 function init() {
+  ThreeExtensions.install();
+
   renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.querySelector(".app").appendChild(renderer.domElement);
@@ -22,9 +25,9 @@ function init() {
   scene = new THREE.Scene();
 
   keyboard = new Keyboard();
-  keyboard.position.x = 0;
-  keyboard.position.y = 600;
-  keyboard.position.z = 0;
+  keyboard.bbox.centerX = 0;
+  keyboard.bbox.centerY = 600;
+  keyboard.bbox.centerZ = 0;
   keyboard.addClickListener(camera);
   scene.add(keyboard);
 
@@ -39,9 +42,9 @@ function render() {
   // Queue up the next render.
   requestAnimationFrame(render);
 
-  if (keyboard.position.y > 0) {
+  if (keyboard.bbox.centerY > 0) {
     // Move keyboard until it reaches its resting position.
-    keyboard.position.y -= 4;
+    keyboard.bbox.centerY -= 4;
   } else if (keyboard.rotation.x < Math.PI / 4) {
     // Rotate keyboard until it reaches its resting position.
     keyboard.rotation.x += Math.PI / 300;
