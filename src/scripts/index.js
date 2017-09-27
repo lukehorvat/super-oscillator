@@ -5,37 +5,38 @@ import Keyboard from "./keyboard";
 
 let renderer, camera, scene, light, keyboard;
 
-init();
-render();
+init().then(render);
 
 function init() {
-  ThreeExtensions.install();
+  return Keyboard.init().then(() => {
+    ThreeExtensions.install();
 
-  renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.querySelector(".app").appendChild(renderer.domElement);
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.querySelector(".app").appendChild(renderer.domElement);
 
-  camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
-  camera.position.x = 0;
-  camera.position.y = 0;
-  camera.position.z = 1300;
+    camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.position.z = 1300;
 
-  WindowResize(renderer, camera); // Automatically handle window resize events.
+    WindowResize(renderer, camera); // Automatically handle window resize events.
 
-  scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
-  keyboard = new Keyboard();
-  keyboard.bbox.centerX = 0;
-  keyboard.bbox.centerY = 600;
-  keyboard.bbox.centerZ = 0;
-  keyboard.addClickListener(camera);
-  scene.add(keyboard);
+    keyboard = new Keyboard();
+    keyboard.bbox.centerX = 0;
+    keyboard.bbox.centerY = 600;
+    keyboard.bbox.centerZ = 0;
+    keyboard.addClickListener(camera);
+    scene.add(keyboard);
 
-  light = new THREE.SpotLight("#aaaaaa");
-  light.position.x = 0;
-  light.position.y = 1000;
-  light.position.z = 0;
-  scene.add(light);
+    light = new THREE.SpotLight("#aaaaaa");
+    light.position.x = 0;
+    light.position.y = 1000;
+    light.position.z = 0;
+    scene.add(light);
+  });
 }
 
 function render() {
