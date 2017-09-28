@@ -2,6 +2,7 @@ import * as THREE from "three";
 import oscillators from "web-audio-oscillators";
 import Reverb from "soundbank-reverb";
 import tonal from "tonal";
+import wrapIndex from "wrap-index";
 
 export default class Keyboard extends THREE.Group {
   static init() {
@@ -111,7 +112,7 @@ export default class Keyboard extends THREE.Group {
   createOscillatorScreen() {
     this.oscillatorScreen = new THREE.Mesh();
     this.oscillatorScreen.material = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#161616", reflectivity: 0.2, metalness: 0.8 });
-    this.oscillatorScreen.geometry = new THREE.BoxGeometry(this.backBoard.bbox.width * 0.18, 2, this.backBoard.bbox.depth * 0.65);
+    this.oscillatorScreen.geometry = new THREE.BoxGeometry(this.backBoard.bbox.width * 0.18, 2, this.backBoard.bbox.depth * 0.6);
     this.oscillatorScreen.bbox.centerX = this.backBoard.bbox.centerX;
     this.oscillatorScreen.bbox.minY = this.backBoard.bbox.maxY;
     this.oscillatorScreen.bbox.centerZ = this.backBoard.bbox.centerZ;
@@ -142,18 +143,71 @@ export default class Keyboard extends THREE.Group {
 
   createOscillatorLeftButton() {
     this.oscillatorLeftButton = new THREE.Mesh();
-    this.oscillatorLeftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7 });
-    this.oscillatorLeftButton.geometry = new THREE.BoxGeometry(this.backBoard.bbox.width * 0.05, 10, this.oscillatorScreen.bbox.depth);
+    this.oscillatorLeftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7, side: THREE.DoubleSide });
+    this.oscillatorLeftButton.geometry = new THREE.Geometry();
+
+    let width = this.backBoard.bbox.width * 0.02;
+    let height = 6;
+    let depth = this.oscillatorScreen.bbox.depth * 0.7;
+    let hypotenuse = Math.hypot(width, depth / 2);
+    let angle = Math.asin((depth / 2) / hypotenuse);
+
+    let mesh1 = new THREE.Mesh();
+    mesh1.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(-width, depth / 2),
+      new THREE.Vector2(0, depth),
+    ]));
+    mesh1.bbox.minX = 0;
+    mesh1.bbox.minY = height;
+    mesh1.bbox.maxZ = 0;
+    mesh1.rotation.x = Math.PI / 2;
+    this.oscillatorLeftButton.geometry.mergeMesh(mesh1);
+
+    let mesh2 = new THREE.Mesh();
+    mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(hypotenuse, 0),
+      new THREE.Vector2(hypotenuse, height),
+      new THREE.Vector2(0, height),
+    ]));
+    mesh2.bbox.minX = 0;
+    mesh2.bbox.minY = 0;
+    mesh2.bbox.maxZ = depth / 2;
+    mesh2.rotation.y = -angle;
+    this.oscillatorLeftButton.geometry.mergeMesh(mesh2);
+
+    let mesh3 = mesh2.clone();
+    mesh3.rotation.y = angle;
+    this.oscillatorLeftButton.geometry.mergeMesh(mesh3);
+
+    let mesh4 = new THREE.Mesh();
+    mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
+      new THREE.Vector2(0, 0),
+      new THREE.Vector2(depth, 0),
+      new THREE.Vector2(depth, height),
+      new THREE.Vector2(0, height),
+    ]));
+    mesh4.bbox.minX = width;
+    mesh4.bbox.minY = 0;
+    mesh4.bbox.maxZ = depth;
+    mesh4.rotation.y = Math.PI / 2;
+    this.oscillatorLeftButton.geometry.mergeMesh(mesh4);
+
     this.oscillatorLeftButton.bbox.maxX = this.oscillatorScreen.bbox.minX - ((this.backBoard.bbox.depth - this.oscillatorScreen.bbox.depth) / 2);
     this.oscillatorLeftButton.bbox.minY = this.backBoard.bbox.maxY;
     this.oscillatorLeftButton.bbox.centerZ = this.backBoard.bbox.centerZ;
     this.oscillatorLeftButton.userData.pressHeight = this.oscillatorLeftButton.bbox.height / 2;
+    this.oscillatorLeftButton.userData.indexIncrement = -1;
     this.add(this.oscillatorLeftButton);
   }
 
   createOscillatorRightButton() {
     this.oscillatorRightButton = this.oscillatorLeftButton.clone();
+    this.oscillatorRightButton.rotation.y = Math.PI;
     this.oscillatorRightButton.bbox.minX = this.oscillatorScreen.bbox.maxX + ((this.backBoard.bbox.depth - this.oscillatorScreen.bbox.depth) / 2);
+    this.oscillatorRightButton.bbox.centerZ = this.backBoard.bbox.centerZ;
+    this.oscillatorRightButton.userData.indexIncrement = 1;
     this.add(this.oscillatorRightButton);
   }
 
@@ -220,13 +274,9 @@ export default class Keyboard extends THREE.Group {
       if (intersects.length === 0) return;
       clickedObject = intersects[0].object;
 
-      if (clickedObject === this.oscillatorLeftButton) {
-        this.oscillatorLeftButton.bbox.minY -= this.oscillatorLeftButton.userData.pressHeight;
-        this.oscillatorIndex = this.oscillatorIndex > 0 ? this.oscillatorIndex - 1 : Object.entries(oscillators).length - 1;
-        this.destroyOscillatorScreenText();
-      } else if (clickedObject === this.oscillatorRightButton) {
-        this.oscillatorRightButton.bbox.minY -= this.oscillatorRightButton.userData.pressHeight;
-        this.oscillatorIndex = this.oscillatorIndex < Object.entries(oscillators).length - 1 ? this.oscillatorIndex + 1 : 0;
+      if (clickedObject === this.oscillatorLeftButton || clickedObject === this.oscillatorRightButton) {
+        clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
+        this.oscillatorIndex = wrapIndex(this.oscillatorIndex + clickedObject.userData.indexIncrement, Object.entries(oscillators).length);
         this.destroyOscillatorScreenText();
       } else if (this.keys.includes(clickedObject)) {
         clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
