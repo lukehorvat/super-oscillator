@@ -56,11 +56,10 @@ function init() {
     });
     scene.add(fork);
 
-    keyboard = new Keyboard();
+    keyboard = new Keyboard(renderer, camera);
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
-    keyboard.addClickListener(renderer, camera);
     scene.add(keyboard);
   });
 }

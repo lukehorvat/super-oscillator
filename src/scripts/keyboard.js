@@ -14,9 +14,11 @@ export default class Keyboard extends THREE.Group {
     });
   }
 
-  constructor() {
+  constructor(renderer, camera) {
     super();
 
+    this.renderer = renderer;
+    this.camera = camera;
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.gain = this.audioContext.createGain();
     this.gain.gain.value = 0.2; // TODO: Add UI control for this.
@@ -35,6 +37,7 @@ export default class Keyboard extends THREE.Group {
     this.createOscillatorLeftButton();
     this.createOscillatorRightButton();
     this.createKeys();
+    this.setupMouseListener();
   }
 
   createBottomBoard() {
@@ -134,11 +137,6 @@ export default class Keyboard extends THREE.Group {
     // FIXME: Adjust the x position because text doesn't center properly for some reason. Is it a bug in FontLoader?
     this.oscillatorScreenText.position.x -= this.oscillatorScreenText.bbox.width * 0.04;
     this.oscillatorScreenText.position.z += this.oscillatorScreenText.bbox.height * 0.09;
-  }
-
-  destroyOscillatorScreenText() {
-    this.remove(this.oscillatorScreenText);
-    this.oscillatorScreenText = null;
   }
 
   createOscillatorLeftButton() {
@@ -263,45 +261,74 @@ export default class Keyboard extends THREE.Group {
     return key;
   }
 
-  addClickListener(renderer, camera) {
-    let clickedObject, oscillator;
+  setupMouseListener() {
+    let objectClicked;
 
-    renderer.domElement.addEventListener("mousedown", event => {
-      let x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-      let y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-      let raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+    this.renderer.domElement.addEventListener("mousedown", event => {
+      objectClicked = this.getObjectAtCoord(event.clientX, event.clientY);
 
-      let intersections = raycaster.intersectObjects(this.children);
-      if (intersections.length === 0) return;
-      clickedObject = intersections[0].object;
-
-      if (clickedObject === this.oscillatorLeftButton || clickedObject === this.oscillatorRightButton) {
-        clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
-        this.oscillatorIndex = wrapIndex(this.oscillatorIndex + clickedObject.userData.indexIncrement, Object.entries(oscillators).length);
-        this.destroyOscillatorScreenText();
-      } else if (this.keys.includes(clickedObject)) {
-        clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
-        oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
-        oscillator.frequency.value = clickedObject.userData.frequency;
-        oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
-        oscillator.start();
+      if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(objectClicked)) {
+        this.pressButton(objectClicked);
+      } else if (this.keys.includes(objectClicked)) {
+        this.pressKey(objectClicked);
       }
     });
 
-    renderer.domElement.addEventListener("mouseup", event => {
-      if (!clickedObject) return;
-
-      if (clickedObject === this.oscillatorLeftButton || clickedObject === this.oscillatorRightButton) {
-        clickedObject.bbox.minY += clickedObject.userData.pressHeight;
-        this.createOscillatorScreenText();
-      } else if (this.keys.includes(clickedObject)) {
-        clickedObject.bbox.minY += clickedObject.userData.pressHeight;
-        oscillator.stop();
+    this.renderer.domElement.addEventListener("mouseup", event => {
+      if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(objectClicked)) {
+        this.unpressButton(objectClicked);
+      } else if (this.keys.includes(objectClicked)) {
+        this.unpressKey(objectClicked);
       }
 
-      clickedObject = null;
+      objectClicked = null;
     });
+
+    this.renderer.domElement.addEventListener("mousemove", event => {
+      let object = this.getObjectAtCoord(event.clientX, event.clientY);
+
+      if (this.keys.includes(objectClicked) && this.keys.includes(object) && objectClicked !== object) {
+        this.unpressKey(objectClicked);
+        this.pressKey(objectClicked = object);
+      }
+    });
+  }
+
+  pressButton(button) {
+    button.bbox.minY -= button.userData.pressHeight;
+    this.oscillatorIndex = wrapIndex(this.oscillatorIndex + button.userData.indexIncrement, Object.entries(oscillators).length);
+    this.remove(this.oscillatorScreenText);
+  }
+
+  unpressButton(button) {
+    button.bbox.minY += button.userData.pressHeight;
+    this.createOscillatorScreenText();
+  }
+
+  pressKey(key) {
+    key.bbox.minY -= key.userData.pressHeight;
+    this.oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
+    this.oscillator.frequency.value = key.userData.frequency;
+    this.oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
+    this.oscillator.start();
+  }
+
+  unpressKey(key) {
+    key.bbox.minY += key.userData.pressHeight;
+    this.oscillator.stop();
+  }
+
+  getObjectAtCoord(x, y) {
+    x = (x / this.renderer.domElement.clientWidth) * 2 - 1;
+    y = -(y / this.renderer.domElement.clientHeight) * 2 + 1;
+
+    let raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
+
+    let intersections = raycaster.intersectObjects(this.children);
+    if (intersections.length > 0) {
+      return intersections[0].object;
+    }
   }
 }
 
