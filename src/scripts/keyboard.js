@@ -266,13 +266,13 @@ export default class Keyboard extends THREE.Group {
   addClickListener(camera) {
     let clickedObject, oscillator;
 
-    window.addEventListener("mousedown", () => {
+    window.addEventListener("mousedown", event => {
       let vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
       vector.unproject(camera);
       let raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-      let intersects = raycaster.intersectObjects(this.children);
-      if (intersects.length === 0) return;
-      clickedObject = intersects[0].object;
+      let intersections = raycaster.intersectObjects(this.children);
+      if (intersections.length === 0) return;
+      clickedObject = intersections[0].object;
 
       if (clickedObject === this.oscillatorLeftButton || clickedObject === this.oscillatorRightButton) {
         clickedObject.bbox.minY -= clickedObject.userData.pressHeight;
@@ -287,7 +287,7 @@ export default class Keyboard extends THREE.Group {
       }
     });
 
-    window.addEventListener("mouseup", () => {
+    window.addEventListener("mouseup", event => {
       if (!clickedObject) return;
 
       if (clickedObject === this.oscillatorLeftButton || clickedObject === this.oscillatorRightButton) {
