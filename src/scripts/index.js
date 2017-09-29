@@ -45,10 +45,12 @@ function init() {
     fork.bbox.centerY = -200;
     fork.bbox.centerZ = 0;
     window.addEventListener("click", event => {
-      let vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
-      vector.unproject(camera);
-      let ray = new THREE.Ray(camera.position, vector.sub(camera.position).normalize());
-      if (ray.intersectsBox(fork.bbox.bbox.world)) {
+      let x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      let y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      let raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+
+      if (raycaster.ray.intersectsBox(fork.bbox.bbox.world)) {
         window.location.href = "https://github.com/lukehorvat/synthesizer";
       }
     });
@@ -58,7 +60,7 @@ function init() {
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
-    keyboard.addClickListener(camera);
+    keyboard.addClickListener(renderer, camera);
     scene.add(keyboard);
   });
 }
