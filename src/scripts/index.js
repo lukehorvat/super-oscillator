@@ -3,7 +3,7 @@ import WindowResize from "three-window-resize";
 import * as ThreeExtensions from "./three";
 import Keyboard from "./keyboard";
 
-let renderer, camera, scene, light, keyboard;
+let renderer, camera, scene, light, title, keyboard;
 
 init().then(render);
 
@@ -24,18 +24,26 @@ function init() {
 
     scene = new THREE.Scene();
 
+    light = new THREE.SpotLight("#aaaaaa");
+    light.position.x = 0;
+    light.position.y = 1000;
+    light.position.z = 0;
+    scene.add(light);
+
+    title = new THREE.Mesh();
+    title.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
+    title.geometry = new THREE.TextGeometry("SYNTHESIZER", { font: Keyboard.font, size: 80, height: 1 });
+    title.bbox.centerX = 0;
+    title.bbox.centerY = 200;
+    title.bbox.centerZ = 0;
+    scene.add(title);
+
     keyboard = new Keyboard();
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
     keyboard.addClickListener(camera);
     scene.add(keyboard);
-
-    light = new THREE.SpotLight("#aaaaaa");
-    light.position.x = 0;
-    light.position.y = 1000;
-    light.position.z = 0;
-    scene.add(light);
   });
 }
 
@@ -49,6 +57,8 @@ function render() {
   } else if (keyboard.rotation.x < Math.PI / 4) {
     // Rotate keyboard until it reaches its resting position.
     keyboard.rotation.x += Math.PI / 300;
+  } else if (title.material.opacity < 1) {
+    title.material.opacity += 0.01;
   }
 
   // Render the scene!
