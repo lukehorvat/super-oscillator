@@ -35,7 +35,7 @@ function init() {
     title.geometry = new THREE.TextGeometry("SYNTHESIZER", { font: Keyboard.font, size: 70, height: 1 });
     title.bbox.centerX = 0;
     title.bbox.centerY = 200;
-    title.bbox.centerZ = 0;
+    title.bbox.centerZ = -600;
     scene.add(title);
 
     keyboard = new Keyboard();
@@ -57,9 +57,16 @@ function render() {
   } else if (keyboard.rotation.x < Math.PI / 4) {
     // Rotate keyboard until it reaches its resting position.
     keyboard.rotation.x += Math.PI / 300;
-  } else if (title.material.opacity < 1) {
-    // Fade-in title.
-    title.material.opacity += 0.01;
+  } else {
+    if (title.bbox.centerZ < 0) {
+      // Move title until it reaches its resting position.
+      title.bbox.centerZ += 4;
+    }
+
+    if (title.material.opacity < 1) {
+      // Fade-in title.
+      title.material.opacity += 0.01;
+    }
   }
 
   // Render the scene!
