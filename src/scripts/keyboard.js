@@ -14,11 +14,9 @@ export default class Keyboard extends THREE.Group {
     });
   }
 
-  constructor(renderer, camera) {
+  constructor() {
     super();
 
-    this.renderer = renderer;
-    this.camera = camera;
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.gain = this.audioContext.createGain();
     this.gain.gain.value = 0.2; // TODO: Add UI control for this.
@@ -37,7 +35,6 @@ export default class Keyboard extends THREE.Group {
     this.createOscillatorLeftButton();
     this.createOscillatorRightButton();
     this.createKeys();
-    this.setupMouseListener();
   }
 
   createBottomBoard() {
@@ -261,73 +258,53 @@ export default class Keyboard extends THREE.Group {
     return key;
   }
 
-  setupMouseListener() {
-    let objectClicked;
+  addMouseListener(renderer, camera) {
+    let clickableObjects = [this.oscillatorLeftButton, this.oscillatorRightButton, ...this.keys];
+    let clickedObject;
 
-    this.renderer.domElement.addEventListener("mousedown", event => {
-      objectClicked = this.getObjectAtCoord(event.clientX, event.clientY);
-
-      if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(objectClicked)) {
-        this.pressButton(objectClicked);
-      } else if (this.keys.includes(objectClicked)) {
-        this.pressKey(objectClicked);
-      }
+    renderer.domElement.addEventListener("mousedown", event => {
+      clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
+      this.onMouseDown(clickedObject);
     });
 
-    this.renderer.domElement.addEventListener("mouseup", event => {
-      if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(objectClicked)) {
-        this.unpressButton(objectClicked);
-      } else if (this.keys.includes(objectClicked)) {
-        this.unpressKey(objectClicked);
-      }
-
-      objectClicked = null;
+    renderer.domElement.addEventListener("mouseup", event => {
+      this.onMouseUp(clickedObject);
+      clickedObject = null;
     });
 
-    this.renderer.domElement.addEventListener("mousemove", event => {
-      let object = this.getObjectAtCoord(event.clientX, event.clientY);
+    renderer.domElement.addEventListener("mousemove", event => {
+      let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
 
-      if (this.keys.includes(objectClicked) && this.keys.includes(object) && objectClicked !== object) {
-        this.unpressKey(objectClicked);
-        this.pressKey(objectClicked = object);
+      if (this.keys.includes(clickedObject) && this.keys.includes(object) && clickedObject !== object) {
+        this.onMouseUp(clickedObject);
+        this.onMouseDown(clickedObject = object);
       }
+
+      this.cursor = clickableObjects.includes(object) ? "pointer" : null;
     });
   }
 
-  pressButton(button) {
-    button.bbox.minY -= button.userData.pressHeight;
-    this.oscillatorIndex = wrapIndex(this.oscillatorIndex + button.userData.indexIncrement, Object.entries(oscillators).length);
-    this.remove(this.oscillatorScreenText);
+  onMouseDown(object) {
+    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(object)) {
+      object.bbox.minY -= object.userData.pressHeight;
+      this.oscillatorIndex = wrapIndex(this.oscillatorIndex + object.userData.indexIncrement, Object.entries(oscillators).length);
+      this.remove(this.oscillatorScreenText);
+    } else if (this.keys.includes(object)) {
+      object.bbox.minY -= object.userData.pressHeight;
+      this.oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
+      this.oscillator.frequency.value = object.userData.frequency;
+      this.oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
+      this.oscillator.start();
+    }
   }
 
-  unpressButton(button) {
-    button.bbox.minY += button.userData.pressHeight;
-    this.createOscillatorScreenText();
-  }
-
-  pressKey(key) {
-    key.bbox.minY -= key.userData.pressHeight;
-    this.oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
-    this.oscillator.frequency.value = key.userData.frequency;
-    this.oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
-    this.oscillator.start();
-  }
-
-  unpressKey(key) {
-    key.bbox.minY += key.userData.pressHeight;
-    this.oscillator.stop();
-  }
-
-  getObjectAtCoord(x, y) {
-    x = (x / this.renderer.domElement.clientWidth) * 2 - 1;
-    y = -(y / this.renderer.domElement.clientHeight) * 2 + 1;
-
-    let raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(x, y), this.camera);
-
-    let intersections = raycaster.intersectObjects(this.children);
-    if (intersections.length > 0) {
-      return intersections[0].object;
+  onMouseUp(object) {
+    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(object)) {
+      object.bbox.minY += object.userData.pressHeight;
+      this.createOscillatorScreenText();
+    } else if (this.keys.includes(object)) {
+      object.bbox.minY += object.userData.pressHeight;
+      this.oscillator.stop();
     }
   }
 }

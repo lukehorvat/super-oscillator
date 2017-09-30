@@ -151,4 +151,16 @@ export function install() {
       return new this.constructor(-this.x, -this.y, -this.z);
     }
   });
+
+  Object.defineProperty(THREE.Camera.prototype, "isObjectAtCoord", {
+    value: function(options = {}) {
+      let { object, x, y, renderer, bbox } = options;
+      x = (x / renderer.domElement.clientWidth) * 2 - 1;
+      y = -(y / renderer.domElement.clientHeight) * 2 + 1;
+      let raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(new THREE.Vector2(x, y), this);
+
+      return bbox ? raycaster.ray.intersectsBox(object.bbox.bbox.world) : raycaster.intersectObject(object).length;
+    }
+  });
 }

@@ -44,23 +44,27 @@ function init() {
     fork.bbox.centerX = 0;
     fork.bbox.centerY = -200;
     fork.bbox.centerZ = 0;
-    window.addEventListener("click", event => {
-      let x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
-      let y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
-      let raycaster = new THREE.Raycaster();
-      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
-
-      if (raycaster.ray.intersectsBox(fork.bbox.bbox.world)) {
-        window.location.href = "https://github.com/lukehorvat/synthesizer";
-      }
-    });
     scene.add(fork);
 
-    keyboard = new Keyboard(renderer, camera);
+    keyboard = new Keyboard();
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
+    keyboard.addMouseListener(renderer, camera);
     scene.add(keyboard);
+
+    renderer.domElement.addEventListener("click", event => {
+      if (camera.isObjectAtCoord({ object: fork, x: event.clientX, y: event.clientY, renderer, bbox: true })) {
+        window.location.href = "https://github.com/lukehorvat/synthesizer";
+      }
+    });
+
+    renderer.domElement.addEventListener("mousemove", event => {
+      renderer.domElement.style.cursor =
+        camera.isObjectAtCoord({ object: fork, x: event.clientX, y: event.clientY, renderer, bbox: true }) ?
+        "pointer" :
+        keyboard.cursor;
+    });
   });
 }
 
