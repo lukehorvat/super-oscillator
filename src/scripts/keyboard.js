@@ -262,17 +262,20 @@ export default class Keyboard extends THREE.Group {
     let clickableObjects = [this.oscillatorLeftButton, this.oscillatorRightButton, ...this.keys];
     let clickedObject;
 
-    renderer.domElement.addEventListener("mousedown", event => {
+    window.addEventListener("mousedown", event => {
+      // If the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
+      if (clickedObject) this.onMouseUp(clickedObject);
+
       clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       this.onMouseDown(clickedObject);
     });
 
-    renderer.domElement.addEventListener("mouseup", event => {
+    window.addEventListener("mouseup", event => {
       this.onMouseUp(clickedObject);
       clickedObject = null;
     });
 
-    renderer.domElement.addEventListener("mousemove", event => {
+    window.addEventListener("mousemove", event => {
       let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
 
       if (this.keys.includes(clickedObject) && this.keys.includes(object) && clickedObject !== object) {
@@ -280,7 +283,7 @@ export default class Keyboard extends THREE.Group {
         this.onMouseDown(clickedObject = object);
       }
 
-      this.cursor = clickableObjects.includes(object) ? "pointer" : null;
+      renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
     });
   }
 

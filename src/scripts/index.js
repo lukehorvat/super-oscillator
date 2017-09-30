@@ -3,7 +3,7 @@ import WindowResize from "three-window-resize";
 import * as ThreeExtensions from "./three";
 import Keyboard from "./keyboard";
 
-let renderer, camera, scene, light, title, fork, keyboard;
+let renderer, camera, scene, light, title, keyboard;
 
 init().then(render);
 
@@ -13,7 +13,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+    document.querySelector(".app").appendChild(renderer.domElement);
 
     camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
     camera.position.x = 0;
@@ -38,33 +38,12 @@ function init() {
     title.bbox.centerZ = 0;
     scene.add(title);
 
-    fork = new THREE.Mesh();
-    fork.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
-    fork.geometry = new THREE.TextGeometry("Fork me on GitHub", { font: Keyboard.font, size: 20, height: 1 });
-    fork.bbox.centerX = 0;
-    fork.bbox.centerY = -200;
-    fork.bbox.centerZ = 0;
-    scene.add(fork);
-
     keyboard = new Keyboard();
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
     keyboard.addMouseListener(renderer, camera);
     scene.add(keyboard);
-
-    renderer.domElement.addEventListener("click", event => {
-      if (camera.isObjectAtCoord({ object: fork, x: event.clientX, y: event.clientY, renderer, bbox: true })) {
-        window.location.href = "https://github.com/lukehorvat/synthesizer";
-      }
-    });
-
-    renderer.domElement.addEventListener("mousemove", event => {
-      renderer.domElement.style.cursor =
-        camera.isObjectAtCoord({ object: fork, x: event.clientX, y: event.clientY, renderer, bbox: true }) ?
-        "pointer" :
-        keyboard.cursor;
-    });
   });
 }
 
@@ -78,16 +57,9 @@ function render() {
   } else if (keyboard.rotation.x < Math.PI / 4) {
     // Rotate keyboard until it reaches its resting position.
     keyboard.rotation.x += Math.PI / 300;
-  } else {
-    if (title.material.opacity < 1) {
-      // Fade-in title.
-      title.material.opacity += 0.01;
-    }
-
-    if (fork.material.opacity < 1) {
-      // Fade-in fork link.
-      fork.material.opacity += 0.01;
-    }
+  } else if (title.material.opacity < 1) {
+    // Fade-in title.
+    title.material.opacity += 0.01;
   }
 
   // Render the scene!
