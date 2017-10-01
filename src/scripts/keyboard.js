@@ -260,55 +260,63 @@ export default class Keyboard extends THREE.Group {
 
   addMouseListener(renderer, camera) {
     let clickableObjects = [this.oscillatorLeftButton, this.oscillatorRightButton, ...this.keys];
-    let clickedObject;
 
-    window.addEventListener("mousedown", event => {
-      // If the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
-      if (clickedObject) this.onMouseUp(clickedObject);
-
-      clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
-      this.onMouseDown(clickedObject);
+    renderer.domElement.addEventListener("mousedown", event => {
+      this.onMouseUp(); // In case the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
+      this.clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
+      this.onMouseDown();
     });
 
-    window.addEventListener("mouseup", event => {
-      this.onMouseUp(clickedObject);
-      clickedObject = null;
+    renderer.domElement.addEventListener("mouseup", event => {
+      this.onMouseUp();
     });
 
-    window.addEventListener("mousemove", event => {
+    renderer.domElement.addEventListener("mousemove", event => {
       let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
-
-      if (this.keys.includes(clickedObject) && this.keys.includes(object) && clickedObject !== object) {
-        this.onMouseUp(clickedObject);
-        this.onMouseDown(clickedObject = object);
-      }
-
       renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
+
+      // If a key was previously clicked and the mouse has moved to another key, make that
+      // the new "clicked" key. This allows keys to be played in a click+drag manner.
+      if (this.clickedObject !== object && this.keys.includes(this.clickedObject) && this.keys.includes(object)) {
+        this.onMouseUp();
+        this.clickedObject = object;
+        this.onMouseDown();
+      }
+    });
+
+    renderer.domElement.addEventListener("mouseleave", event => {
+      this.onMouseUp(); // The mouse left the canvas, so cancel the last click.
     });
   }
 
-  onMouseDown(object) {
-    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(object)) {
-      object.bbox.minY -= object.userData.pressHeight;
-      this.oscillatorIndex = wrapIndex(this.oscillatorIndex + object.userData.indexIncrement, Object.entries(oscillators).length);
+  onMouseDown() {
+    if (!this.clickedObject) return;
+
+    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(this.clickedObject)) {
+      this.clickedObject.bbox.minY -= this.clickedObject.userData.pressHeight;
+      this.oscillatorIndex = wrapIndex(this.oscillatorIndex + this.clickedObject.userData.indexIncrement, Object.entries(oscillators).length);
       this.remove(this.oscillatorScreenText);
-    } else if (this.keys.includes(object)) {
-      object.bbox.minY -= object.userData.pressHeight;
+    } else if (this.keys.includes(this.clickedObject)) {
+      this.clickedObject.bbox.minY -= this.clickedObject.userData.pressHeight;
       this.oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
-      this.oscillator.frequency.value = object.userData.frequency;
+      this.oscillator.frequency.value = this.clickedObject.userData.frequency;
       this.oscillator.connect(this.gain).connect(this.reverb).connect(this.audioContext.destination);
       this.oscillator.start();
     }
   }
 
-  onMouseUp(object) {
-    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(object)) {
-      object.bbox.minY += object.userData.pressHeight;
+  onMouseUp() {
+    if (!this.clickedObject) return;
+
+    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(this.clickedObject)) {
+      this.clickedObject.bbox.minY += this.clickedObject.userData.pressHeight;
       this.createOscillatorScreenText();
-    } else if (this.keys.includes(object)) {
-      object.bbox.minY += object.userData.pressHeight;
+    } else if (this.keys.includes(this.clickedObject)) {
+      this.clickedObject.bbox.minY += this.clickedObject.userData.pressHeight;
       this.oscillator.stop();
     }
+
+    this.clickedObject = null;
   }
 }
 
