@@ -263,6 +263,7 @@ export default class Keyboard extends THREE.Group {
 
     renderer.domElement.addEventListener("mousedown", event => {
       this.onMouseUp(); // In case the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
+      if (event.buttons !== 1) return;
       this.clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       this.onMouseDown();
     });
