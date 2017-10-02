@@ -43,7 +43,7 @@ function init() {
     description.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
     description.geometry = new THREE.TextGeometry("An interactive, 3D music synthesizer for the Web!", { font: Synthesizer.font, size: 22, height: 1 });
     description.bbox.centerX = 0;
-    description.bbox.centerY = -200;
+    description.bbox.centerY = -220;
     description.bbox.centerZ = description.userData.initialZ = -600;
     description.position.x -= 3; // FIXME: Text doesn't center properly; a bug in FontLoader?
     scene.add(description);
