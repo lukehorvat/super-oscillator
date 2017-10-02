@@ -1,5 +1,9 @@
 # Super Oscillator
 
+<p align="center">
+  <img src="https://i.imgur.com/QqcEvAT.gif">
+</p>
+
 An interactive, 3D music synthesizer for the Web!
 
 Live version hosted [here](https://lukehorvat.github.io/super-oscillator).
