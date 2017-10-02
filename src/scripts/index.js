@@ -1,14 +1,14 @@
 import * as THREE from "three";
 import WindowResize from "three-window-resize";
 import * as ThreeExtensions from "./three";
-import Keyboard from "./keyboard";
+import Synthesizer from "./synthesizer";
 
-let renderer, camera, scene, light, title, keyboard;
+let renderer, camera, scene, light, title, synthesizer;
 
 init().then(render);
 
 function init() {
-  return Keyboard.init().then(() => {
+  return Synthesizer.init().then(() => {
     ThreeExtensions.install();
 
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
@@ -32,22 +32,22 @@ function init() {
 
     title = new THREE.Mesh();
     title.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
-    title.geometry = new THREE.TextGeometry("SYNTHESIZER", { font: Keyboard.font, size: 70, height: 1 });
+    title.geometry = new THREE.TextGeometry("Super Oscillator", { font: Synthesizer.font, size: 60, height: 1 });
     title.bbox.centerX = 0;
     title.bbox.centerY = 200;
     title.bbox.centerZ = -600;
     scene.add(title);
 
-    keyboard = new Keyboard({
+    synthesizer = new Synthesizer({
       width: window.innerWidth * 0.8,
       height: window.innerWidth * 0.07,
       depth: window.innerWidth * 0.15
     });
-    keyboard.bbox.centerX = 0;
-    keyboard.bbox.centerY = 600;
-    keyboard.bbox.centerZ = 0;
-    keyboard.addMouseListener(renderer, camera);
-    scene.add(keyboard);
+    synthesizer.bbox.centerX = 0;
+    synthesizer.bbox.centerY = 600;
+    synthesizer.bbox.centerZ = 0;
+    synthesizer.addMouseListener(renderer, camera);
+    scene.add(synthesizer);
   });
 }
 
@@ -55,12 +55,12 @@ function render() {
   // Queue up the next render.
   requestAnimationFrame(render);
 
-  if (keyboard.bbox.centerY > 0) {
-    // Move keyboard until it reaches its resting position.
-    keyboard.bbox.centerY -= 4;
-  } else if (keyboard.rotation.x < Math.PI / 4) {
-    // Rotate keyboard until it reaches its resting position.
-    keyboard.rotation.x += Math.PI / 300;
+  if (synthesizer.bbox.centerY > 0) {
+    // Move synthesizer until it reaches its resting position.
+    synthesizer.bbox.centerY -= 4;
+  } else if (synthesizer.rotation.x < Math.PI / 4) {
+    // Rotate synthesizer until it reaches its resting position.
+    synthesizer.rotation.x += Math.PI / 300;
   } else {
     if (title.bbox.centerZ < 0) {
       // Move title until it reaches its resting position.

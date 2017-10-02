@@ -4,7 +4,7 @@ import Reverb from "soundbank-reverb";
 import tonal from "tonal";
 import wrapIndex from "wrap-index";
 
-export default class Keyboard extends THREE.Group {
+export default class Synthesizer extends THREE.Group {
   constructor(options = {}) {
     super();
 
@@ -127,7 +127,7 @@ export default class Keyboard extends THREE.Group {
 
     this.screenText = new THREE.Mesh();
     this.screenText.material = new THREE.MeshPhysicalMaterial({ color: "#ff6600", emissive: "#bb3300", reflectivity: 0, metalness: 0 });
-    this.screenText.geometry = new THREE.TextGeometry(oscillatorName, { font: Keyboard.font, size: this.screen.bbox.depth * 0.4, height: 1 });
+    this.screenText.geometry = new THREE.TextGeometry(oscillatorName, { font: Synthesizer.font, size: this.screen.bbox.depth * 0.4, height: 1 });
     this.screenText.bbox.centerX = this.screen.bbox.centerX;
     this.screenText.bbox.minY = this.screen.bbox.maxY;
     this.screenText.bbox.minZ = this.screen.bbox.centerZ + (this.screenText.bbox.height / 2);
