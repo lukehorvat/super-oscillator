@@ -25,46 +25,45 @@ export default class Keyboard extends THREE.Group {
     this.reverb.wet.value = 0.8;
     this.reverb.dry.value = 0.6;
     this.oscillatorIndex = Object.keys(oscillators).indexOf("organ");
-
-    this.createBottomBoard();
-    this.createBackBoard();
-    this.createLeftBoard();
-    this.createRightBoard();
-    this.createOscillatorScreen();
-    this.createOscillatorScreenText();
-    this.createOscillatorLeftButton();
-    this.createOscillatorRightButton();
+    this.createBottomPanel();
+    this.createBackPanel();
+    this.createLeftPanel();
+    this.createRightPanel();
+    this.createScreen();
+    this.createScreenText();
+    this.createLeftButton();
+    this.createRightButton();
     this.createKeys();
   }
 
-  createBottomBoard() {
-    this.bottomBoard = new THREE.Mesh();
-    this.bottomBoard.material = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
-    this.bottomBoard.geometry = new THREE.BoxGeometry(1100, 25, 205);
-    this.bottomBoard.bbox.centerX = 0;
-    this.bottomBoard.bbox.centerY = 0;
-    this.bottomBoard.bbox.centerZ = 0;
-    this.add(this.bottomBoard);
+  createBottomPanel() {
+    this.bottomPanel = new THREE.Mesh();
+    this.bottomPanel.material = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
+    this.bottomPanel.geometry = new THREE.BoxGeometry(1100, 25, 205);
+    this.bottomPanel.bbox.centerX = 0;
+    this.bottomPanel.bbox.centerY = 0;
+    this.bottomPanel.bbox.centerZ = 0;
+    this.add(this.bottomPanel);
   }
 
-  createBackBoard() {
-    this.backBoard = new THREE.Mesh();
-    this.backBoard.material = this.bottomBoard.material;
-    this.backBoard.geometry = new THREE.BoxGeometry(this.bottomBoard.bbox.width, 70, this.bottomBoard.bbox.depth * 0.32);
-    this.backBoard.bbox.centerX = this.bottomBoard.bbox.centerX;
-    this.backBoard.bbox.minY = this.bottomBoard.bbox.maxY;
-    this.backBoard.bbox.minZ = this.bottomBoard.bbox.minZ;
-    this.add(this.backBoard);
+  createBackPanel() {
+    this.backPanel = new THREE.Mesh();
+    this.backPanel.material = this.bottomPanel.material;
+    this.backPanel.geometry = new THREE.BoxGeometry(this.bottomPanel.bbox.width, 70, this.bottomPanel.bbox.depth * 0.32);
+    this.backPanel.bbox.centerX = this.bottomPanel.bbox.centerX;
+    this.backPanel.bbox.minY = this.bottomPanel.bbox.maxY;
+    this.backPanel.bbox.minZ = this.bottomPanel.bbox.minZ;
+    this.add(this.backPanel);
   }
 
-  createLeftBoard() {
-    this.leftBoard = new THREE.Mesh();
-    this.leftBoard.material = this.bottomBoard.material;
-    this.leftBoard.geometry = new THREE.Geometry();
+  createLeftPanel() {
+    this.leftPanel = new THREE.Mesh();
+    this.leftPanel.material = this.bottomPanel.material;
+    this.leftPanel.geometry = new THREE.Geometry();
 
-    let width = this.bottomBoard.bbox.width * 0.06;
-    let height = this.backBoard.bbox.height;
-    let depth = this.bottomBoard.bbox.depth - this.backBoard.bbox.depth;
+    let width = this.bottomPanel.bbox.width * 0.06;
+    let height = this.backPanel.bbox.height;
+    let depth = this.bottomPanel.bbox.depth - this.backPanel.bbox.depth;
     let hypotenuse = Math.hypot(height, depth);
     let angle = Math.asin(depth / hypotenuse);
 
@@ -79,7 +78,7 @@ export default class Keyboard extends THREE.Group {
     mesh1.bbox.minY = 0;
     mesh1.bbox.maxZ = depth;
     mesh1.rotation.x = -angle;
-    this.leftBoard.geometry.mergeMesh(mesh1);
+    this.leftPanel.geometry.mergeMesh(mesh1);
 
     let mesh2 = new THREE.Mesh();
     mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
@@ -91,59 +90,59 @@ export default class Keyboard extends THREE.Group {
     mesh2.bbox.minY = 0;
     mesh2.bbox.minZ = 0;
     mesh2.rotation.y = -Math.PI / 2;
-    this.leftBoard.geometry.mergeMesh(mesh2);
+    this.leftPanel.geometry.mergeMesh(mesh2);
 
     let mesh3 = mesh2.clone();
     mesh3.bbox.maxX = width;
-    this.leftBoard.geometry.mergeMesh(mesh3);
+    this.leftPanel.geometry.mergeMesh(mesh3);
 
-    this.leftBoard.bbox.minX = this.bottomBoard.bbox.minX;
-    this.leftBoard.bbox.minY = this.bottomBoard.bbox.maxY;
-    this.leftBoard.bbox.maxZ = this.bottomBoard.bbox.maxZ;
-    this.add(this.leftBoard);
+    this.leftPanel.bbox.minX = this.bottomPanel.bbox.minX;
+    this.leftPanel.bbox.minY = this.bottomPanel.bbox.maxY;
+    this.leftPanel.bbox.maxZ = this.bottomPanel.bbox.maxZ;
+    this.add(this.leftPanel);
   }
 
-  createRightBoard() {
-    this.rightBoard = this.leftBoard.clone();
-    this.rightBoard.bbox.maxX = this.bottomBoard.bbox.maxX;
-    this.add(this.rightBoard);
+  createRightPanel() {
+    this.rightPanel = this.leftPanel.clone();
+    this.rightPanel.bbox.maxX = this.bottomPanel.bbox.maxX;
+    this.add(this.rightPanel);
   }
 
-  createOscillatorScreen() {
-    this.oscillatorScreen = new THREE.Mesh();
-    this.oscillatorScreen.material = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#161616", reflectivity: 0.2, metalness: 0.8 });
-    this.oscillatorScreen.geometry = new THREE.BoxGeometry(this.backBoard.bbox.width * 0.18, 2, this.backBoard.bbox.depth * 0.6);
-    this.oscillatorScreen.bbox.centerX = this.backBoard.bbox.centerX;
-    this.oscillatorScreen.bbox.minY = this.backBoard.bbox.maxY;
-    this.oscillatorScreen.bbox.centerZ = this.backBoard.bbox.centerZ;
-    this.add(this.oscillatorScreen);
+  createScreen() {
+    this.screen = new THREE.Mesh();
+    this.screen.material = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#161616", reflectivity: 0.2, metalness: 0.8 });
+    this.screen.geometry = new THREE.BoxGeometry(this.backPanel.bbox.width * 0.18, 2, this.backPanel.bbox.depth * 0.6);
+    this.screen.bbox.centerX = this.backPanel.bbox.centerX;
+    this.screen.bbox.minY = this.backPanel.bbox.maxY;
+    this.screen.bbox.centerZ = this.backPanel.bbox.centerZ;
+    this.add(this.screen);
   }
 
-  createOscillatorScreenText() {
+  createScreenText() {
     let oscillatorName = Object.keys(oscillators)[this.oscillatorIndex].toUpperCase();
 
-    this.oscillatorScreenText = new THREE.Mesh();
-    this.oscillatorScreenText.material = new THREE.MeshPhysicalMaterial({ color: "#ff6600", emissive: "#bb3300", reflectivity: 0, metalness: 0 });
-    this.oscillatorScreenText.geometry = new THREE.TextGeometry(oscillatorName, { font: Keyboard.font, size: this.oscillatorScreen.bbox.depth * 0.4, height: 1 });
-    this.oscillatorScreenText.bbox.centerX = this.oscillatorScreen.bbox.centerX;
-    this.oscillatorScreenText.bbox.minY = this.oscillatorScreen.bbox.maxY;
-    this.oscillatorScreenText.bbox.minZ = this.oscillatorScreen.bbox.centerZ + (this.oscillatorScreenText.bbox.height / 2);
-    this.oscillatorScreenText.rotation.x = -Math.PI / 2;
-    this.add(this.oscillatorScreenText);
+    this.screenText = new THREE.Mesh();
+    this.screenText.material = new THREE.MeshPhysicalMaterial({ color: "#ff6600", emissive: "#bb3300", reflectivity: 0, metalness: 0 });
+    this.screenText.geometry = new THREE.TextGeometry(oscillatorName, { font: Keyboard.font, size: this.screen.bbox.depth * 0.4, height: 1 });
+    this.screenText.bbox.centerX = this.screen.bbox.centerX;
+    this.screenText.bbox.minY = this.screen.bbox.maxY;
+    this.screenText.bbox.minZ = this.screen.bbox.centerZ + (this.screenText.bbox.height / 2);
+    this.screenText.rotation.x = -Math.PI / 2;
+    this.add(this.screenText);
 
     // FIXME: Adjust the x position because text doesn't center properly for some reason. Is it a bug in FontLoader?
-    this.oscillatorScreenText.position.x -= this.oscillatorScreenText.bbox.width * 0.04;
-    this.oscillatorScreenText.position.z += this.oscillatorScreenText.bbox.height * 0.09;
+    this.screenText.position.x -= this.screenText.bbox.width * 0.04;
+    this.screenText.position.z += this.screenText.bbox.height * 0.09;
   }
 
-  createOscillatorLeftButton() {
-    this.oscillatorLeftButton = new THREE.Mesh();
-    this.oscillatorLeftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7, side: THREE.DoubleSide });
-    this.oscillatorLeftButton.geometry = new THREE.Geometry();
+  createLeftButton() {
+    this.leftButton = new THREE.Mesh();
+    this.leftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7, side: THREE.DoubleSide });
+    this.leftButton.geometry = new THREE.Geometry();
 
-    let width = this.backBoard.bbox.width * 0.02;
+    let width = this.backPanel.bbox.width * 0.02;
     let height = 6;
-    let depth = this.oscillatorScreen.bbox.depth * 0.7;
+    let depth = this.screen.bbox.depth * 0.7;
     let hypotenuse = Math.hypot(width, depth / 2);
     let angle = Math.asin((depth / 2) / hypotenuse);
 
@@ -157,7 +156,7 @@ export default class Keyboard extends THREE.Group {
     mesh1.bbox.minY = height;
     mesh1.bbox.maxZ = 0;
     mesh1.rotation.x = Math.PI / 2;
-    this.oscillatorLeftButton.geometry.mergeMesh(mesh1);
+    this.leftButton.geometry.mergeMesh(mesh1);
 
     let mesh2 = new THREE.Mesh();
     mesh2.geometry = new THREE.ShapeGeometry(new THREE.Shape([
@@ -170,11 +169,11 @@ export default class Keyboard extends THREE.Group {
     mesh2.bbox.minY = 0;
     mesh2.bbox.maxZ = depth / 2;
     mesh2.rotation.y = -angle;
-    this.oscillatorLeftButton.geometry.mergeMesh(mesh2);
+    this.leftButton.geometry.mergeMesh(mesh2);
 
     let mesh3 = mesh2.clone();
     mesh3.rotation.y = angle;
-    this.oscillatorLeftButton.geometry.mergeMesh(mesh3);
+    this.leftButton.geometry.mergeMesh(mesh3);
 
     let mesh4 = new THREE.Mesh();
     mesh4.geometry = new THREE.ShapeGeometry(new THREE.Shape([
@@ -187,23 +186,21 @@ export default class Keyboard extends THREE.Group {
     mesh4.bbox.minY = 0;
     mesh4.bbox.maxZ = depth;
     mesh4.rotation.y = Math.PI / 2;
-    this.oscillatorLeftButton.geometry.mergeMesh(mesh4);
+    this.leftButton.geometry.mergeMesh(mesh4);
 
-    this.oscillatorLeftButton.bbox.maxX = this.oscillatorScreen.bbox.minX - ((this.backBoard.bbox.depth - this.oscillatorScreen.bbox.depth) / 2);
-    this.oscillatorLeftButton.bbox.minY = this.backBoard.bbox.maxY;
-    this.oscillatorLeftButton.bbox.centerZ = this.backBoard.bbox.centerZ;
-    this.oscillatorLeftButton.userData.pressHeight = this.oscillatorLeftButton.bbox.height / 2;
-    this.oscillatorLeftButton.userData.indexIncrement = -1;
-    this.add(this.oscillatorLeftButton);
+    this.leftButton.bbox.maxX = this.screen.bbox.minX - ((this.backPanel.bbox.depth - this.screen.bbox.depth) / 2);
+    this.leftButton.bbox.minY = this.backPanel.bbox.maxY;
+    this.leftButton.bbox.centerZ = this.backPanel.bbox.centerZ;
+    this.leftButton.userData.pressHeight = this.leftButton.bbox.height / 2;
+    this.add(this.leftButton);
   }
 
-  createOscillatorRightButton() {
-    this.oscillatorRightButton = this.oscillatorLeftButton.clone();
-    this.oscillatorRightButton.rotation.y = Math.PI;
-    this.oscillatorRightButton.bbox.minX = this.oscillatorScreen.bbox.maxX + ((this.backBoard.bbox.depth - this.oscillatorScreen.bbox.depth) / 2);
-    this.oscillatorRightButton.bbox.centerZ = this.backBoard.bbox.centerZ;
-    this.oscillatorRightButton.userData.indexIncrement = 1;
-    this.add(this.oscillatorRightButton);
+  createRightButton() {
+    this.rightButton = this.leftButton.clone();
+    this.rightButton.rotation.y = Math.PI;
+    this.rightButton.bbox.minX = this.screen.bbox.maxX + ((this.backPanel.bbox.depth - this.screen.bbox.depth) / 2);
+    this.rightButton.bbox.centerZ = this.backPanel.bbox.centerZ;
+    this.add(this.rightButton);
   }
 
   createKeys() {
@@ -213,9 +210,9 @@ export default class Keyboard extends THREE.Group {
   createKey(note, index, notes) {
     let key = new THREE.Mesh();
     let keyGap = 2;
-    let keyWidth = (this.backBoard.bbox.width - this.leftBoard.bbox.width - this.rightBoard.bbox.width - ((notes.length + 1) * keyGap)) / notes.length;
+    let keyWidth = (this.backPanel.bbox.width - this.leftPanel.bbox.width - this.rightPanel.bbox.width - ((notes.length + 1) * keyGap)) / notes.length;
     let keyWhiteHeight = 20;
-    let keyWhiteDepth = this.bottomBoard.bbox.depth - this.backBoard.bbox.depth - keyGap;
+    let keyWhiteDepth = this.bottomPanel.bbox.depth - this.backPanel.bbox.depth - keyGap;
     let keyBlackHeight = keyWhiteHeight * 1.75;
     let keyBlackDepth = keyWhiteDepth * 0.65;
     let keyPressHeight = keyWhiteHeight / 2;
@@ -248,9 +245,9 @@ export default class Keyboard extends THREE.Group {
       }
     }
 
-    key.position.x = this.leftBoard.bbox.maxX + keyGap + (keyWidth / 2) + ((keyWidth + keyGap) * index);
-    key.bbox.minY = this.bottomBoard.bbox.maxY + keyGap + keyPressHeight;
-    key.bbox.minZ = this.backBoard.bbox.maxZ;
+    key.position.x = this.leftPanel.bbox.maxX + keyGap + (keyWidth / 2) + ((keyWidth + keyGap) * index);
+    key.bbox.minY = this.bottomPanel.bbox.maxY + keyGap + keyPressHeight;
+    key.bbox.minZ = this.backPanel.bbox.maxZ;
     key.userData.pressHeight = keyPressHeight;
     key.userData.frequency = tonal.note.freq(note);
     this.add(key);
@@ -259,20 +256,20 @@ export default class Keyboard extends THREE.Group {
   }
 
   addMouseListener(renderer, camera) {
-    let clickableObjects = [this.oscillatorLeftButton, this.oscillatorRightButton, ...this.keys];
+    let clickableObjects = [this.leftButton, this.rightButton, ...this.keys];
 
-    renderer.domElement.addEventListener("mousedown", event => {
+    window.addEventListener("mousedown", event => {
       this.onMouseUp(); // In case the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
       if (event.buttons !== 1) return;
       this.clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       this.onMouseDown();
     });
 
-    renderer.domElement.addEventListener("mouseup", event => {
+    window.addEventListener("mouseup", event => {
       this.onMouseUp();
     });
 
-    renderer.domElement.addEventListener("mousemove", event => {
+    window.addEventListener("mousemove", event => {
       let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
 
@@ -293,10 +290,10 @@ export default class Keyboard extends THREE.Group {
   onMouseDown() {
     if (!this.clickedObject) return;
 
-    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(this.clickedObject)) {
+    if ([this.leftButton, this.rightButton].includes(this.clickedObject)) {
       this.clickedObject.bbox.minY -= this.clickedObject.userData.pressHeight;
-      this.oscillatorIndex = wrapIndex(this.oscillatorIndex + this.clickedObject.userData.indexIncrement, Object.entries(oscillators).length);
-      this.remove(this.oscillatorScreenText);
+      this.oscillatorIndex = wrapIndex(this.oscillatorIndex + (this.clickedObject === this.rightButton ? 1 : -1), Object.entries(oscillators).length);
+      this.remove(this.screenText);
     } else if (this.keys.includes(this.clickedObject)) {
       this.clickedObject.bbox.minY -= this.clickedObject.userData.pressHeight;
       this.oscillator = Object.values(oscillators)[this.oscillatorIndex](this.audioContext);
@@ -309,9 +306,9 @@ export default class Keyboard extends THREE.Group {
   onMouseUp() {
     if (!this.clickedObject) return;
 
-    if ([this.oscillatorLeftButton, this.oscillatorRightButton].includes(this.clickedObject)) {
+    if ([this.leftButton, this.rightButton].includes(this.clickedObject)) {
       this.clickedObject.bbox.minY += this.clickedObject.userData.pressHeight;
-      this.createOscillatorScreenText();
+      this.createScreenText();
     } else if (this.keys.includes(this.clickedObject)) {
       this.clickedObject.bbox.minY += this.clickedObject.userData.pressHeight;
       this.oscillator.stop();
