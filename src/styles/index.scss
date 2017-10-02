@@ -5,7 +5,8 @@ body, .app {
   padding: 0;
   border: 0;
   overflow: hidden;
-  background: radial-gradient(#ff7700, #ff6600) fixed;
+  background: url("../images/background.png"), radial-gradient(#ff7700, #ff6600) fixed;
+  box-shadow: 0px 0px 150px 10px rgba(0, 0, 0, 0.2) inset;
 }
 
 .fork {
