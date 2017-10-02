@@ -3,7 +3,7 @@ import WindowResize from "three-window-resize";
 import * as ThreeExtensions from "./three";
 import Synthesizer from "./synthesizer";
 
-let renderer, camera, scene, light, title, synthesizer;
+let renderer, camera, scene, light, title, description, synthesizer;
 
 init().then(render);
 
@@ -35,8 +35,16 @@ function init() {
     title.geometry = new THREE.TextGeometry("Super Oscillator", { font: Synthesizer.font, size: 60, height: 1 });
     title.bbox.centerX = 0;
     title.bbox.centerY = 200;
-    title.bbox.centerZ = -600;
+    title.bbox.centerZ = title.userData.initialZ = -600;
     scene.add(title);
+
+    description = new THREE.Mesh();
+    description.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
+    description.geometry = new THREE.TextGeometry("An interactive, 3D music synthesizer for the Web!", { font: Synthesizer.font, size: 22, height: 1 });
+    description.bbox.centerX = 0;
+    description.bbox.centerY = -200;
+    description.bbox.centerZ = description.userData.initialZ = -600;
+    scene.add(description);
 
     synthesizer = new Synthesizer({
       width: window.innerWidth * 0.8,
@@ -61,16 +69,18 @@ function render() {
   } else if (synthesizer.rotation.x < Math.PI / 4) {
     // Rotate synthesizer until it reaches its resting position.
     synthesizer.rotation.x += Math.PI / 300;
-  } else {
-    if (title.bbox.centerZ < 0) {
+  } else if (title.bbox.centerZ < 0) {
       // Move title until it reaches its resting position.
       title.bbox.centerZ += 4;
-    }
 
-    if (title.material.opacity < 1) {
       // Fade-in title.
-      title.material.opacity += 0.01;
-    }
+      title.material.opacity = 1 - Math.abs(title.bbox.centerZ / title.userData.initialZ);
+  } else if (description.bbox.centerZ < 0) {
+    // Move description until it reaches its resting position.
+    description.bbox.centerZ += 4;
+
+    // Fade-in description.
+    description.material.opacity = 1 - Math.abs(description.bbox.centerZ / description.userData.initialZ);
   }
 
   // Render the scene!
