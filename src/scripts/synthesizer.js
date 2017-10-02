@@ -134,9 +134,9 @@ export default class Synthesizer extends THREE.Group {
     this.screenText.rotation.x = -Math.PI / 2;
     this.add(this.screenText);
 
-    // FIXME: Adjust the x position because text doesn't center properly for some reason. Is it a bug in FontLoader?
-    this.screenText.position.x -= this.screenText.bbox.width * 0.04;
-    this.screenText.position.z += this.screenText.bbox.height * 0.09;
+    // FIXME: Text doesn't center properly; a bug in FontLoader?
+    this.screenText.position.x -= 2;
+    this.screenText.position.z += 1.7;
   }
 
   createLeftButton() {

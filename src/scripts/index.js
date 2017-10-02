@@ -36,6 +36,7 @@ function init() {
     title.bbox.centerX = 0;
     title.bbox.centerY = 200;
     title.bbox.centerZ = title.userData.initialZ = -600;
+    title.position.x -= 18; // FIXME: Text doesn't center properly; a bug in FontLoader?
     scene.add(title);
 
     description = new THREE.Mesh();
@@ -44,6 +45,7 @@ function init() {
     description.bbox.centerX = 0;
     description.bbox.centerY = -200;
     description.bbox.centerZ = description.userData.initialZ = -600;
+    description.position.x -= 3; // FIXME: Text doesn't center properly; a bug in FontLoader?
     scene.add(description);
 
     synthesizer = new Synthesizer({
