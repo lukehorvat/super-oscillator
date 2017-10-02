@@ -5,18 +5,10 @@ import tonal from "tonal";
 import wrapIndex from "wrap-index";
 
 export default class Keyboard extends THREE.Group {
-  static init() {
-    return new Promise(resolve => {
-      new THREE.FontLoader().load("fonts/share-tech-mono.json", font => {
-        this.font = font;
-        resolve();
-      });
-    });
-  }
-
-  constructor() {
+  constructor(options = {}) {
     super();
 
+    this.options = options;
     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
     this.gain = this.audioContext.createGain();
     this.gain.gain.value = 0.2; // TODO: Add UI control for this.
@@ -37,9 +29,13 @@ export default class Keyboard extends THREE.Group {
   }
 
   createBottomPanel() {
+    let width = this.options.width;
+    let height = this.options.height / 4;
+    let depth = this.options.depth;
+
     this.bottomPanel = new THREE.Mesh();
     this.bottomPanel.material = new THREE.MeshPhysicalMaterial({ color: "#3a3a3a", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.1, side: THREE.DoubleSide });
-    this.bottomPanel.geometry = new THREE.BoxGeometry(1100, 25, 205);
+    this.bottomPanel.geometry = new THREE.BoxGeometry(width, height, depth);
     this.bottomPanel.bbox.centerX = 0;
     this.bottomPanel.bbox.centerY = 0;
     this.bottomPanel.bbox.centerZ = 0;
@@ -47,9 +43,13 @@ export default class Keyboard extends THREE.Group {
   }
 
   createBackPanel() {
+    let width = this.bottomPanel.bbox.width;
+    let height = this.options.height / 1.45;
+    let depth = this.bottomPanel.bbox.depth * 0.32;
+
     this.backPanel = new THREE.Mesh();
     this.backPanel.material = this.bottomPanel.material;
-    this.backPanel.geometry = new THREE.BoxGeometry(this.bottomPanel.bbox.width, 70, this.bottomPanel.bbox.depth * 0.32);
+    this.backPanel.geometry = new THREE.BoxGeometry(width, height, depth);
     this.backPanel.bbox.centerX = this.bottomPanel.bbox.centerX;
     this.backPanel.bbox.minY = this.bottomPanel.bbox.maxY;
     this.backPanel.bbox.minZ = this.bottomPanel.bbox.minZ;
@@ -57,15 +57,15 @@ export default class Keyboard extends THREE.Group {
   }
 
   createLeftPanel() {
-    this.leftPanel = new THREE.Mesh();
-    this.leftPanel.material = this.bottomPanel.material;
-    this.leftPanel.geometry = new THREE.Geometry();
-
     let width = this.bottomPanel.bbox.width * 0.06;
     let height = this.backPanel.bbox.height;
     let depth = this.bottomPanel.bbox.depth - this.backPanel.bbox.depth;
     let hypotenuse = Math.hypot(height, depth);
     let angle = Math.asin(depth / hypotenuse);
+
+    this.leftPanel = new THREE.Mesh();
+    this.leftPanel.material = this.bottomPanel.material;
+    this.leftPanel.geometry = new THREE.Geometry();
 
     let mesh1 = new THREE.Mesh();
     mesh1.geometry = new THREE.ShapeGeometry(new THREE.Shape([
@@ -109,9 +109,13 @@ export default class Keyboard extends THREE.Group {
   }
 
   createScreen() {
+    let width = this.backPanel.bbox.width * 0.18;
+    let height = (this.options.height - this.backPanel.bbox.height - this.bottomPanel.bbox.height) / 3;
+    let depth = this.backPanel.bbox.depth * 0.6;
+
     this.screen = new THREE.Mesh();
     this.screen.material = new THREE.MeshPhysicalMaterial({ color: "#000000", emissive: "#161616", reflectivity: 0.2, metalness: 0.8 });
-    this.screen.geometry = new THREE.BoxGeometry(this.backPanel.bbox.width * 0.18, 2, this.backPanel.bbox.depth * 0.6);
+    this.screen.geometry = new THREE.BoxGeometry(width, height, depth);
     this.screen.bbox.centerX = this.backPanel.bbox.centerX;
     this.screen.bbox.minY = this.backPanel.bbox.maxY;
     this.screen.bbox.centerZ = this.backPanel.bbox.centerZ;
@@ -136,15 +140,15 @@ export default class Keyboard extends THREE.Group {
   }
 
   createLeftButton() {
-    this.leftButton = new THREE.Mesh();
-    this.leftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7, side: THREE.DoubleSide });
-    this.leftButton.geometry = new THREE.Geometry();
-
     let width = this.backPanel.bbox.width * 0.02;
-    let height = 6;
+    let height = this.options.height - this.backPanel.bbox.height - this.bottomPanel.bbox.height;
     let depth = this.screen.bbox.depth * 0.7;
     let hypotenuse = Math.hypot(width, depth / 2);
     let angle = Math.asin((depth / 2) / hypotenuse);
+
+    this.leftButton = new THREE.Mesh();
+    this.leftButton.material = new THREE.MeshPhysicalMaterial({ color: "#111111", emissive: "#1a1a1a", reflectivity: 0.1, metalness: 0.7, side: THREE.DoubleSide });
+    this.leftButton.geometry = new THREE.Geometry();
 
     let mesh1 = new THREE.Mesh();
     mesh1.geometry = new THREE.ShapeGeometry(new THREE.Shape([
@@ -211,9 +215,9 @@ export default class Keyboard extends THREE.Group {
     let key = new THREE.Mesh();
     let keyGap = 2;
     let keyWidth = (this.backPanel.bbox.width - this.leftPanel.bbox.width - this.rightPanel.bbox.width - ((notes.length + 1) * keyGap)) / notes.length;
-    let keyWhiteHeight = 20;
+    let keyBlackHeight = this.backPanel.bbox.height / 2;
+    let keyWhiteHeight = keyBlackHeight / 1.75;
     let keyWhiteDepth = this.bottomPanel.bbox.depth - this.backPanel.bbox.depth - keyGap;
-    let keyBlackHeight = keyWhiteHeight * 1.75;
     let keyBlackDepth = keyWhiteDepth * 0.65;
     let keyPressHeight = keyWhiteHeight / 2;
     let semitone = index % 12;
@@ -336,6 +340,15 @@ export default class Keyboard extends THREE.Group {
     }
 
     this.clickedObject = null;
+  }
+
+  static init() {
+    return new Promise(resolve => {
+      new THREE.FontLoader().load("fonts/share-tech-mono.json", font => {
+        this.font = font;
+        resolve();
+      });
+    });
   }
 }
 

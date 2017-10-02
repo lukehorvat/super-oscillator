@@ -38,7 +38,11 @@ function init() {
     title.bbox.centerZ = -600;
     scene.add(title);
 
-    keyboard = new Keyboard();
+    keyboard = new Keyboard({
+      width: window.innerWidth * 0.8,
+      height: window.innerWidth * 0.07,
+      depth: window.innerWidth * 0.15
+    });
     keyboard.bbox.centerX = 0;
     keyboard.bbox.centerY = 600;
     keyboard.bbox.centerZ = 0;
