@@ -32,7 +32,7 @@ function init() {
 
     title = new THREE.Mesh();
     title.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
-    title.geometry = new THREE.TextGeometry("Super Oscillator", { font: Synthesizer.font, size: 60, height: 1 });
+    title.geometry = new THREE.TextGeometry("Super Oscillator", { font: Synthesizer.font, size: window.innerWidth * 0.045, height: 1 });
     title.bbox.centerX = 0;
     title.bbox.centerY = 200;
     title.bbox.centerZ = title.userData.initialZ = -600;
@@ -41,7 +41,7 @@ function init() {
 
     description = new THREE.Mesh();
     description.material = new THREE.MeshToonMaterial({ color: "#3a3a3a", transparent: true, opacity: 0 });
-    description.geometry = new THREE.TextGeometry("An interactive, 3D music synthesizer for the Web!", { font: Synthesizer.font, size: 22, height: 1 });
+    description.geometry = new THREE.TextGeometry("An interactive, 3D music synthesizer for the Web!", { font: Synthesizer.font, size: window.innerWidth * 0.016, height: 1 });
     description.bbox.centerX = 0;
     description.bbox.centerY = -220;
     description.bbox.centerZ = description.userData.initialZ = -600;
