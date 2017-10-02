@@ -31,6 +31,7 @@ There are still a few things I'd like to do:
 - Add knobs for controlling various effects (reverb, delay, vibrato, etc.).
 - Show the note name when a key is pressed.
 - Add more oscillators (via the web-audio-oscillators package).
+- Implement QWERTY keyboard control i.e. interact with the synthesizer via your keyboard.
 - Add some kind of light effect to the screen so that it looks more like a real electronic display.
 - Add buttons to start/stop the playing of preset songs.
 - Fix the bug that causes the fork link in the top-right corner to occasionally hijack mouse clicks made on the synthesizer. I don't know what is causing this...
