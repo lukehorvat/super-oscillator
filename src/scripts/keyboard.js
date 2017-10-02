@@ -216,28 +216,49 @@ export default class Keyboard extends THREE.Group {
     let keyBlackHeight = keyWhiteHeight * 1.75;
     let keyBlackDepth = keyWhiteDepth * 0.65;
     let keyPressHeight = keyWhiteHeight / 2;
+    let semitone = index % 12;
 
-    if (tonal.note.alt(note)) {
+    if ([1, 3, 6, 8, 10].includes(semitone)) {
       key.material = new THREE.MeshPhysicalMaterial({ color: "#333333", emissive: "#000000", reflectivity: 0.1, metalness: 0.1 });
       key.geometry = new THREE.BoxGeometry(keyWidth, keyBlackHeight, keyBlackDepth);
     } else {
       key.material = new THREE.MeshPhysicalMaterial({ color: "#dddddd", emissive: "#888888", reflectivity: 0.5, metalness: 0.5 });
       key.geometry = new THREE.BoxGeometry(keyWidth, keyWhiteHeight, keyWhiteDepth);
 
-      let previousNote = notes[index - 1];
-      if (previousNote && tonal.note.alt(previousNote)) {
+      // Attach an extra geometry to the white key's left side?
+      if ([2, 4, 7, 9, 11].includes(semitone)) {
+        let width = (keyGap * 0.5) + (keyWidth * (() => {
+          switch (semitone) {
+            case 2: case 7: return 0.25;
+            case 4: case 11: return 0.75;
+            case 9: return 0.5;
+          }
+        })());
+        let height = key.bbox.height;
+        let depth = keyWhiteDepth - keyBlackDepth - keyGap;
+
         let mesh1 = new THREE.Mesh();
-        mesh1.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), key.bbox.height, keyWhiteDepth - keyBlackDepth - keyGap);
+        mesh1.geometry = new THREE.BoxGeometry(width, height, depth);
         mesh1.bbox.maxX = key.bbox.minX;
         mesh1.bbox.minY = key.bbox.minY;
         mesh1.bbox.maxZ = key.bbox.maxZ;
         key.geometry.mergeMesh(mesh1);
       }
 
-      let nextNote = notes[index + 1];
-      if (nextNote && tonal.note.alt(nextNote)) {
+      // Attach an extra geometry to the white key's right side?
+      if ([0, 2, 5, 7, 9].includes(semitone)) {
+        let width = (keyGap * 0.5) + (keyWidth * (() => {
+          switch (semitone) {
+            case 2: case 9: return 0.25;
+            case 0: case 5: return 0.75;
+            case 7: return 0.5;
+          }
+        })());
+        let height = key.bbox.height;
+        let depth = keyWhiteDepth - keyBlackDepth - keyGap;
+
         let mesh2 = new THREE.Mesh();
-        mesh2.geometry = new THREE.BoxGeometry((keyWidth / 2) + (keyGap / 2), key.bbox.height, keyWhiteDepth - keyBlackDepth - keyGap);
+        mesh2.geometry = new THREE.BoxGeometry(width, height, depth);
         mesh2.bbox.minX = key.bbox.maxX;
         mesh2.bbox.minY = key.bbox.minY;
         mesh2.bbox.maxZ = key.bbox.maxZ;
