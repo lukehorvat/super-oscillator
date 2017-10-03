@@ -72,11 +72,11 @@ function render() {
     // Rotate synthesizer until it reaches its resting position.
     synthesizer.rotation.x += Math.PI / 300;
   } else if (title.bbox.centerZ < 0) {
-      // Move title until it reaches its resting position.
-      title.bbox.centerZ += 4;
+    // Move title until it reaches its resting position.
+    title.bbox.centerZ += 4;
 
-      // Fade-in title.
-      title.material.opacity = 1 - Math.abs(title.bbox.centerZ / title.userData.initialZ);
+    // Fade-in title.
+    title.material.opacity = 1 - Math.abs(title.bbox.centerZ / title.userData.initialZ);
   } else if (description.bbox.centerZ < 0) {
     // Move description until it reaches its resting position.
     description.bbox.centerZ += 4;
