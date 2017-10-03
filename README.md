@@ -6,7 +6,7 @@
 
 An interactive, 3D music synthesizer for the Web!
 
-Live version hosted [here](https://lukehorvat.github.io/super-oscillator).
+Live version hosted [here](https://oscillator.js.org).
 
 Uses [three.js](https://threejs.org) and [web-audio-oscillators](https://github.com/lukehorvat/web-audio-oscillators).
 
