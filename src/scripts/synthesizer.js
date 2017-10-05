@@ -283,18 +283,18 @@ export default class Synthesizer extends THREE.Group {
   addMouseListener(renderer, camera) {
     let clickableObjects = [this.leftButton, this.rightButton, ...this.keys];
 
-    window.addEventListener("mousedown", event => {
+    renderer.domElement.addEventListener("mousedown", event => {
       this.onMouseUp(); // In case the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
       if (event.buttons !== 1) return;
       this.clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       this.onMouseDown();
     });
 
-    window.addEventListener("mouseup", event => {
+    renderer.domElement.addEventListener("mouseup", event => {
       this.onMouseUp();
     });
 
-    window.addEventListener("mousemove", event => {
+    renderer.domElement.addEventListener("mousemove", event => {
       let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
 

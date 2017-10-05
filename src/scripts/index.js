@@ -15,7 +15,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.querySelector(".app").appendChild(renderer.domElement);
 
-    camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, Number.MAX_SAFE_INTEGER);
+    camera = new THREE.PerspectiveCamera(30, renderer.domElement.clientWidth / renderer.domElement.clientHeight, 1, Number.MAX_SAFE_INTEGER);
     camera.position.x = 0;
     camera.position.y = 0;
     camera.position.z = 1300;

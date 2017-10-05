@@ -34,7 +34,7 @@ There are still a few things I'd like to do:
 - Implement QWERTY keyboard control i.e. interact with the synthesizer via your keyboard.
 - Add some kind of light effect to the screen so that it looks more like a real electronic display.
 - Add buttons to start/stop the playing of preset songs.
-- Fix the bug that causes the fork link in the top-right corner to occasionally hijack mouse clicks made on the synthesizer. I don't know what is causing this...
+- Fix the [bug that causes the fork link in the top-right corner to occasionally hijack mouse clicks made on the synthesizer](https://stackoverflow.com/q/46557602). I don't know what is causing this...
 - Get it working properly on mobile devices. It doesn't look good on small screens and the synthesizer doesn't respond to touches.
 - Publish the synthesizer as an NPM package so that others can easily use it in their apps.
 
