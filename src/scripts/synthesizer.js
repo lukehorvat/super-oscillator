@@ -89,7 +89,7 @@ export default class Synthesizer extends THREE.Group {
     mesh2.bbox.minX = 0;
     mesh2.bbox.minY = 0;
     mesh2.bbox.minZ = 0;
-    mesh2.rotation.y = -Math.PI / 2;
+    mesh2.rotation.y = -THREE.Math.degToRad(90);
     this.leftPanel.geometry.mergeMesh(mesh2);
 
     let mesh3 = mesh2.clone();
@@ -131,7 +131,7 @@ export default class Synthesizer extends THREE.Group {
     this.screenText.bbox.centerX = this.screen.bbox.centerX;
     this.screenText.bbox.minY = this.screen.bbox.maxY;
     this.screenText.bbox.minZ = this.screen.bbox.centerZ + (this.screenText.bbox.height / 2);
-    this.screenText.rotation.x = -Math.PI / 2;
+    this.screenText.rotation.x = -THREE.Math.degToRad(90);
     this.add(this.screenText);
 
     // FIXME: Text doesn't center properly; a bug in FontLoader?
@@ -159,7 +159,7 @@ export default class Synthesizer extends THREE.Group {
     mesh1.bbox.minX = 0;
     mesh1.bbox.minY = height;
     mesh1.bbox.maxZ = 0;
-    mesh1.rotation.x = Math.PI / 2;
+    mesh1.rotation.x = THREE.Math.degToRad(90);
     this.leftButton.geometry.mergeMesh(mesh1);
 
     let mesh2 = new THREE.Mesh();
@@ -189,7 +189,7 @@ export default class Synthesizer extends THREE.Group {
     mesh4.bbox.minX = width;
     mesh4.bbox.minY = 0;
     mesh4.bbox.maxZ = depth;
-    mesh4.rotation.y = Math.PI / 2;
+    mesh4.rotation.y = THREE.Math.degToRad(90);
     this.leftButton.geometry.mergeMesh(mesh4);
 
     this.leftButton.bbox.maxX = this.screen.bbox.minX - ((this.backPanel.bbox.depth - this.screen.bbox.depth) / 2);
@@ -201,7 +201,7 @@ export default class Synthesizer extends THREE.Group {
 
   createRightButton() {
     this.rightButton = this.leftButton.clone();
-    this.rightButton.rotation.y = Math.PI;
+    this.rightButton.rotation.y = THREE.Math.degToRad(180);
     this.rightButton.bbox.minX = this.screen.bbox.maxX + ((this.backPanel.bbox.depth - this.screen.bbox.depth) / 2);
     this.rightButton.bbox.centerZ = this.backPanel.bbox.centerZ;
     this.add(this.rightButton);
