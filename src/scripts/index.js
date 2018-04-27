@@ -42,7 +42,7 @@ function init() {
     synthesizer.bbox.centerX = 0;
     synthesizer.bbox.minY = visibleRect.max.y;
     synthesizer.bbox.centerZ = 0;
-    synthesizer.addMouseListener(renderer, camera);
+    synthesizer.addInputListener(renderer, camera);
     scene.add(synthesizer);
   });
 }
