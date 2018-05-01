@@ -21,7 +21,27 @@ import runSequence from "run-sequence";
 import getWantedDependencies from "get-wanted-dependencies";
 import express from "express";
 import http from "http";
-import config from "./gulpconfig";
+
+let config = {
+  serverPort: 9000,
+  sourceDir: "src",
+  buildDir: "dist",
+  index: "src/index.html",
+  script: "src/scripts/index.js",
+  style: "src/styles/index.scss",
+  misc: [
+    "src/images/**/*.{ico,gif,jpg,png}",
+    "src/fonts/**/*.json",
+    "src/models/**/*.obj",
+  ],
+  environments: [{
+    name: "development",
+    minify: false,
+  }, {
+    name: "production",
+    minify: true,
+  }]
+};
 
 let server = http.createServer(express().use(express.static(config.buildDir)));
 let env = config.environments.find(e => e.name === (process.env.NODE_ENV || "development"));
@@ -84,7 +104,6 @@ gulp.task("build-styles", () => {
 
 gulp.task("build-misc", () => {
   let imagesFilter = filter("**/*.{ico,gif,jpg,png}", { restore: true });
-  let soundsFilter = filter("**/*.{mp3,ogg}", { restore: true });
   let fontsFilter = filter("**/*.json", { restore: true });
   let modelsFilter = filter("**/*.obj", { restore: true });
 
@@ -93,9 +112,6 @@ gulp.task("build-misc", () => {
     .pipe(imagesFilter)
     .pipe(gulp.dest(`${config.buildDir}/images`))
     .pipe(imagesFilter.restore)
-    .pipe(soundsFilter)
-    .pipe(gulp.dest(`${config.buildDir}/sounds`))
-    .pipe(soundsFilter.restore)
     .pipe(fontsFilter)
     .pipe(gulp.dest(`${config.buildDir}/fonts`))
     .pipe(fontsFilter.restore)
