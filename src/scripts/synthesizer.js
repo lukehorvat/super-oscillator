@@ -4,6 +4,12 @@ import Reverb from "soundbank-reverb";
 import tonal from "tonal";
 import wrapIndex from "wrap-index";
 
+const keyboardKeyMap = [
+  'q', 'Q', 'w', 'W', 'e', 'r', 'R', 't', 'T', 'y', 'Y', 'u', 'i', 'I', 'o', 'O', 'p', 
+  'a', 'A', 's', 'S', 'd', 'D', 'f', 'g', 'G', 'h', 'H', 'j', 'k', 'K', 'l', 'L',
+  'z', 'Z', 'x', 'c', 'C', 'v', 'V', 'b', 'n', 'N', 'm', 'M', ',', '!', '.'
+];
+
 export default class Synthesizer extends THREE.Group {
   constructor(options = {}) {
     super();
@@ -17,6 +23,7 @@ export default class Synthesizer extends THREE.Group {
     this.reverb.wet.value = 0.8;
     this.reverb.dry.value = 0.6;
     this.oscillatorIndex = Object.keys(oscillators).indexOf("organ");
+    this.isMouseDown = false;
     this.createBottomPanel();
     this.createBackPanel();
     this.createLeftPanel();
@@ -280,30 +287,50 @@ export default class Synthesizer extends THREE.Group {
     return key;
   }
 
-  addMouseListener(renderer, camera) {
+  addInputListener(renderer, camera) {
     let clickableObjects = [this.leftButton, this.rightButton, ...this.keys];
+
+    window.addEventListener("keydown", event => {
+      const keyIndex = keyboardKeyMap.indexOf(event.key);
+      if (keyIndex !== -1 && this.keys[keyIndex] && !this.clickedObject) {
+        this.onMouseUp();
+        this.clickedObject = this.keys[keyIndex];
+        this.onMouseDown();
+      }
+    });
+    
+    window.addEventListener("keyup", event => {
+      const keyIndex = keyboardKeyMap.indexOf(event.key);
+      if (event.key === "Shift" || (keyIndex !== -1 && this.clickedObject === this.keys[keyIndex])) {
+        this.onMouseUp();
+      }
+    });
 
     renderer.domElement.addEventListener("mousedown", event => {
       this.onMouseUp(); // In case the previous mousedown event wasn't followed by a mouseup, force a mouseup now.
+      this.isMouseDown = true;
       if (event.buttons !== 1) return;
       this.clickedObject = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
       this.onMouseDown();
     });
 
     renderer.domElement.addEventListener("mouseup", event => {
+      this.isMouseDown = false;
       this.onMouseUp();
     });
 
     renderer.domElement.addEventListener("mousemove", event => {
-      let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
-      renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
+      if (this.isMouseDown) {
+        let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
+        renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
 
-      // If a key was previously clicked and the mouse has moved to another key, make that
-      // the new "clicked" key. This allows keys to be played in a click+drag manner.
-      if (this.clickedObject !== object && this.keys.includes(this.clickedObject) && this.keys.includes(object)) {
-        this.onMouseUp();
-        this.clickedObject = object;
-        this.onMouseDown();
+        // If a key was previously clicked and the mouse has moved to another key, make that
+        // the new "clicked" key. This allows keys to be played in a click+drag manner.
+        if (this.clickedObject !== object && this.keys.includes(this.clickedObject) && this.keys.includes(object)) {
+          this.onMouseUp();
+          this.clickedObject = object;
+          this.onMouseDown();
+        }
       }
     });
 
