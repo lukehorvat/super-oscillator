@@ -318,14 +318,12 @@ export default class Synthesizer extends THREE.Group {
     });
 
     renderer.domElement.addEventListener("mousemove", event => {
-      if (!this.isMouseDown) return;
-
       let object = clickableObjects.find(object => camera.isObjectAtCoord({ object, x: event.clientX, y: event.clientY, renderer }));
-      renderer.domElement.style.cursor = clickableObjects.includes(object) ? "pointer" : null;
+      renderer.domElement.style.cursor = object ? "pointer" : null;
 
       // If a key was previously clicked and the mouse has moved to another key, make that
       // the new "clicked" key. This allows keys to be played in a click+drag manner.
-      if (this.clickedObject !== object && this.keys.includes(this.clickedObject) && this.keys.includes(object)) {
+      if (this.clickedObject !== object && this.keys.includes(this.clickedObject) && this.keys.includes(object) && this.isMouseDown) {
         this.onMouseUp();
         this.clickedObject = object;
         this.onMouseDown();
