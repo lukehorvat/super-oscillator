@@ -31,7 +31,7 @@ There are still a few things I'd like to do:
 - Add knobs for controlling various effects (reverb, delay, vibrato, etc.).
 - Show the note name when a key is pressed.
 - Add more oscillators (via the web-audio-oscillators package).
-- Implement QWERTY keyboard control i.e. interact with the synthesizer via your keyboard.
+- ~~Implement QWERTY keyboard control i.e. interact with the synthesizer via your keyboard.~~
 - Eliminate the annoying "click" sound heard when playing keys consecutively. Probably need to apply an ADSR envelope...
 - Add some kind of light effect to the screen so that it looks more like a real electronic display.
 - Add buttons to start/stop the playing of preset songs.
