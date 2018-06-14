@@ -12,6 +12,7 @@
     "wrap-index": "1.1.0"
   },
   "devDependencies": {
+    "babel-plugin-transform-inline-environment-variables": "0.4.3",
     "babel-preset-es2015": "6.24.1",
     "babel-preset-stage-0": "6.24.1",
     "babelify": "7.2.0",
@@ -41,6 +42,9 @@
     "presets": [
       "es2015",
       "stage-0"
+    ],
+    "plugins": [
+      "transform-inline-environment-variables"
     ]
   }
 }
