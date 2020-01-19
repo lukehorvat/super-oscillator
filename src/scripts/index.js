@@ -8,7 +8,16 @@ let renderer, camera, scene, clock, light, synthesizer;
 init().then(render);
 
 function init() {
-  return Synthesizer.init().then(() => {
+  return new Promise(resolve => {
+    let welcomeEl = document.querySelector(".welcome");
+
+    welcomeEl.querySelector("button").addEventListener("click", () => {
+      welcomeEl.remove();
+      resolve();
+    }, false);
+  }).then(() => (
+    Synthesizer.init()
+  )).then(() => {
     ThreeExtensions.install();
 
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });

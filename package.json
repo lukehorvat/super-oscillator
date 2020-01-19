@@ -4,7 +4,7 @@
     "start": "./node_modules/.bin/gulp watch"
   },
   "dependencies": {
-    "core-js": "3.6.3",
+    "core-js": "3.6.4",
     "soundbank-reverb": "1.1.2",
     "three": "0.86.0",
     "three-window-resize": "1.0.4",
