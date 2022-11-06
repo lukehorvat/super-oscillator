@@ -23,7 +23,7 @@
     "del": "2.2.0",
     "express": "4.13.4",
     "get-wanted-dependencies": "1.1.1",
-    "gulp": "3.9.1",
+    "gulp": "4.0.2",
     "gulp-autoprefixer": "6.1.0",
     "gulp-clean-css": "2.0.4",
     "gulp-filter": "4.0.0",
