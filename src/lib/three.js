@@ -2,7 +2,7 @@
   A module providing custom extensions to three.js!
 */
 
-import * as THREE from "three";
+import * as THREE from 'three';
 
 class BoundingBox {
   constructor(object) {
@@ -21,7 +21,7 @@ class BoundingBox {
       let world = new THREE.Box3().setFromObject(this.object);
       let local = new THREE.Box3(
         this.object.worldToLocal(world.min.clone()),
-        this.object.worldToLocal(world.max.clone()),
+        this.object.worldToLocal(world.max.clone())
       );
 
       return { world, local };
@@ -48,7 +48,10 @@ class BoundingBox {
   }
 
   get minX() {
-    return this.object.position.x - Math.abs(this.position.local.x - this.bbox.local.min.x);
+    return (
+      this.object.position.x -
+      Math.abs(this.position.local.x - this.bbox.local.min.x)
+    );
   }
 
   set minX(x) {
@@ -64,15 +67,18 @@ class BoundingBox {
   }
 
   get centerX() {
-    return this.minX + (this.width / 2);
+    return this.minX + this.width / 2;
   }
 
   set centerX(x) {
-    this.minX = x - (this.width / 2);
+    this.minX = x - this.width / 2;
   }
 
   get minY() {
-    return this.object.position.y - Math.abs(this.position.local.y - this.bbox.local.min.y);
+    return (
+      this.object.position.y -
+      Math.abs(this.position.local.y - this.bbox.local.min.y)
+    );
   }
 
   set minY(y) {
@@ -88,15 +94,18 @@ class BoundingBox {
   }
 
   get centerY() {
-    return this.minY + (this.height / 2);
+    return this.minY + this.height / 2;
   }
 
   set centerY(y) {
-    this.minY = y - (this.height / 2);
+    this.minY = y - this.height / 2;
   }
 
   get minZ() {
-    return this.object.position.z - Math.abs(this.position.local.z - this.bbox.local.min.z);
+    return (
+      this.object.position.z -
+      Math.abs(this.position.local.z - this.bbox.local.min.z)
+    );
   }
 
   set minZ(z) {
@@ -112,11 +121,11 @@ class BoundingBox {
   }
 
   get centerZ() {
-    return this.minZ + (this.depth / 2);
+    return this.minZ + this.depth / 2;
   }
 
   set centerZ(z) {
-    this.minZ = z - (this.depth / 2);
+    this.minZ = z - this.depth / 2;
   }
 
   /*
@@ -140,42 +149,47 @@ class BoundingBox {
 }
 
 export function install() {
-  Object.defineProperty(THREE.Object3D.prototype, "bbox", {
-    get: function() {
+  Object.defineProperty(THREE.Object3D.prototype, 'bbox', {
+    get: function () {
       return new BoundingBox(this);
-    }
+    },
   });
 
-  Object.defineProperty(THREE.Euler.prototype, "inverted", {
-    value: function() {
+  Object.defineProperty(THREE.Euler.prototype, 'inverted', {
+    value: function () {
       return new this.constructor(-this.x, -this.y, -this.z);
-    }
+    },
   });
 
-  Object.defineProperty(THREE.Camera.prototype, "isObjectAtCoord", {
-    value: function(options = {}) {
+  Object.defineProperty(THREE.Camera.prototype, 'isObjectAtCoord', {
+    value: function (options = {}) {
       let { object, x, y, renderer, bbox } = options;
       x = (x / renderer.domElement.clientWidth) * 2 - 1;
       y = -(y / renderer.domElement.clientHeight) * 2 + 1;
       let raycaster = new THREE.Raycaster();
       raycaster.setFromCamera(new THREE.Vector2(x, y), this);
 
-      return bbox ? raycaster.ray.intersectsBox(object.bbox.bbox.world) : raycaster.intersectObject(object).length;
-    }
+      return bbox
+        ? raycaster.ray.intersectsBox(object.bbox.bbox.world)
+        : raycaster.intersectObject(object).length;
+    },
   });
 
   // A function to compute the visible rectangle at a given depth.
   // See: https://stackoverflow.com/q/13350875
-  Object.defineProperty(THREE.Camera.prototype, "visibleRect", {
-    value: function(z) {
+  Object.defineProperty(THREE.Camera.prototype, 'visibleRect', {
+    value: function (z) {
       let distance = Math.abs(z - this.position.z);
       let height = 2 * Math.tan(THREE.Math.degToRad(this.fov) / 2) * distance;
       let width = height * this.aspect;
 
-      return Object.assign(new THREE.Box2(
-        new THREE.Vector2(-width / 2, -height / 2),
-        new THREE.Vector2(width / 2, height / 2),
-      ), { width, height });
-    }
+      return Object.assign(
+        new THREE.Box2(
+          new THREE.Vector2(-width / 2, -height / 2),
+          new THREE.Vector2(width / 2, height / 2)
+        ),
+        { width, height }
+      );
+    },
   });
 }

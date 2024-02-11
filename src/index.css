@@ -1,8 +1,7 @@
-/* $color: #ff7700; */
 :root {
   --primary-color: rgba(255, 119, 0, 1);
   --primary-color-fade1: rgba(255, 119, 0, 0.1);
-  --primary-color-fade2: rgb(255, 119, 0, 0.25);
+  --primary-color-fade2: rgba(255, 119, 0, 0.25);
 }
 
 html,
