@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import WindowResize from "three-window-resize";
-import * as ThreeExtensions from "./three";
-import Synthesizer from "./synthesizer";
+import * as ThreeExtensions from "./lib/three";
+import Synthesizer from "./lib/synthesizer";
+import './index.css';
 
 let renderer, camera, scene, clock, light, synthesizer;
 
@@ -72,14 +73,4 @@ function render() {
 
   // Queue up the next render.
   requestAnimationFrame(render);
-}
-
-// Google Analytics.
-if (process.env.NODE_ENV === "production") {
-  (function(i,s,o,g,r,a,m){i["GoogleAnalyticsObject"]=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
-  ga("create", "UA-24505142-7", "auto");
-  ga("send", "pageview");
 }

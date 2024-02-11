@@ -1,0 +1,65 @@
+/* $color: #ff7700; */
+:root {
+  --primary-color: rgba(255, 119, 0, 1);
+  --primary-color-fade1: rgba(255, 119, 0, 0.1);
+  --primary-color-fade2: rgb(255, 119, 0, 0.25);
+}
+
+html,
+body,
+.app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  /* background: url('../images/background.png'),
+    radial-gradient($color, adjust-hue($color, -4%)) fixed; */
+}
+
+.welcome {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+  padding: 48px 0px;
+  color: var(--primary-color);
+  /* background: url('../images/background2.png'), #333; */
+  box-shadow: 0px 0px 15px 5px rgba(0, 0, 0, 0.2);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: larger;
+  text-align: center;
+}
+
+.welcome h1 {
+  text-transform: uppercase;
+  margin-top: 0;
+}
+
+.welcome a {
+  color: inherit;
+  font-weight: bold;
+}
+
+.welcome button {
+  min-width: 150px;
+  padding: 12px;
+  margin-top: 12px;
+  color: var(--primary-color);
+  background: var(--primary-color-fade1);
+  border: 4px solid var(--primary-color);
+  border-radius: 2px;
+  font: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.welcome button:hover {
+  background: var(--primary-color-fade2);
+}
+
+.welcome button:focus {
+  outline: none; /* Disable Chrome's blue outline. */
+}

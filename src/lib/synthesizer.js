@@ -214,7 +214,7 @@ export default class Synthesizer extends THREE.Group {
   }
 
   createKeys() {
-    this.keys = tonal.range.chromatic("C2, B5").map(::this.createKey);
+    this.keys = tonal.range.chromatic("C2, B5").map(this.createKey.bind(this));
   }
 
   createKey(note, index, notes) {
@@ -374,8 +374,3 @@ export default class Synthesizer extends THREE.Group {
     });
   }
 }
-
-// Suppress false deprecation warnings when calling tonal.note.alt().
-// See: https://github.com/danigb/tonal/issues/38
-const { warn } = console;
-console.warn = function(msg) { !msg.includes("note.props() is deprecated.") && console::warn(...arguments) };
