@@ -8,9 +8,8 @@
   "dependencies": {
     "soundbank-reverb": "^1.1.2",
     "three": "0.161.0",
-    "tonal": "0.69.9",
-    "web-audio-oscillators": "^1.0.4",
-    "wrap-index": "^1.1.0"
+    "tonal": "^6.0.0",
+    "web-audio-oscillators": "^1.0.4"
   },
   "devDependencies": {
     "@types/three": "0.161.2",
