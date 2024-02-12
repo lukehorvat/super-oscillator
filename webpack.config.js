@@ -14,7 +14,7 @@ module.exports = {
     },
   },
   entry: {
-    app: path.join(__dirname, 'src/index.js'),
+    app: path.join(__dirname, 'src/index.ts'),
   },
   output: {
     path: path.join(__dirname, 'dist'),

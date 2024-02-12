@@ -6,14 +6,14 @@
   },
   "dependencies": {
     "soundbank-reverb": "^1.1.2",
-    "three": "0.86.0",
-    "three-window-resize": "1.0.4",
+    "three": "0.161.0",
     "tonal": "0.69.9",
     "web-audio-oscillators": "^1.0.4",
     "wrap-index": "^1.1.0"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "11.0.0",
+    "@types/three": "0.161.2",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.2",
     "html-webpack-plugin": "^5.5.0",
     "style-loader": "^3.3.1",
