@@ -27,8 +27,23 @@ export class SceneManager {
 
   private animate(): void {
     // const delta = this.clock.getDelta();
-    // this.syncRendererSize();
+    this.syncRendererSize();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  /**
+   * Sync the renderer size with the current canvas size.
+   */
+  private syncRendererSize(): void {
+    const canvas = this.renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    if (canvas.width !== width || canvas.height !== height) {
+      this.renderer.setSize(width, height, false);
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+    }
   }
 }
