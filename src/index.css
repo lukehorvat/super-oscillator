@@ -13,23 +13,19 @@ body,
   padding: 0;
   border: 0;
   overflow: hidden;
+  background: #000;
   /* background: url('../images/background.png'),
     radial-gradient($color, adjust-hue($color, -4%)) fixed; */
+  color: var(--primary-color);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  text-align: center;
 }
 
 .welcome {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
   transform: translate(-50%, -50%);
-  padding: 48px 0px;
-  color: var(--primary-color);
-  /* background: url('../images/background2.png'), #333; */
-  box-shadow: 0px 0px 15px 5px rgba(0, 0, 0, 0.2);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: larger;
-  text-align: center;
 }
 
 .welcome h1 {
@@ -61,4 +57,12 @@ body,
 
 .welcome button:focus {
   outline: none; /* Disable Chrome's blue outline. */
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-transform: uppercase;
 }
