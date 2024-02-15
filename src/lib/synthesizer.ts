@@ -6,6 +6,12 @@ export default class Synthesizer extends THREE.Group {
 
   constructor() {
     super();
+
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(100, 100, 100),
+      new THREE.MeshBasicMaterial({ color: '#ff0000' })
+    );
+    this.add(cube);
   }
 
   static async init(): Promise<void> {
