@@ -12,7 +12,7 @@ export default class Synthesizer extends THREE.Group {
       console.log('!note', note, Note.freq(note));
       const key = new THREE.Mesh();
       key.geometry = new THREE.BoxGeometry(10, 5, 50);
-      key.material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+      key.material = new THREE.MeshPhysicalMaterial({ color: '#ffffff' });
       key.position.x = index * (10 + 2);
       this.add(key);
     });

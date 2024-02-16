@@ -28,6 +28,12 @@ export class SceneManager {
     this.synthesizer = new Synthesizer();
     this.scene.add(this.synthesizer);
     this.camera.lookAt(this.synthesizer.position);
+
+    const ambientLight = new THREE.AmbientLight('#dddddd');
+    this.scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight('#ffffff');
+    this.scene.add(directionalLight);
   }
 
   render(containerEl: Element): void {
