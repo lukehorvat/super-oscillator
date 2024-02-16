@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { Note, Range } from 'tonal';
+import { Range } from 'tonal';
+import Key from './key';
 
 export default class Synthesizer extends THREE.Group {
   private static font: Font;
@@ -8,11 +9,8 @@ export default class Synthesizer extends THREE.Group {
   constructor() {
     super();
 
-    Range.chromatic(['C2', 'B5']).forEach((note, index) => {
-      console.log('!note', note, Note.freq(note));
-      const key = new THREE.Mesh();
-      key.geometry = new THREE.BoxGeometry(10, 5, 50);
-      key.material = new THREE.MeshPhysicalMaterial({ color: '#ffffff' });
+    Range.chromatic(['C2', 'B5']).map((note, index) => {
+      const key = new Key(note);
       key.position.x = index * (10 + 2);
       this.add(key);
     });

@@ -1,4 +1,4 @@
-import Synthesizer from './synthesizer';
+import Synthesizer from './synthesizer/synthesizer';
 
 export async function render(containerEl: Element): Promise<void> {
   const loadingEl = document.createElement('div');
