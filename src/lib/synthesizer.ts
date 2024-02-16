@@ -8,15 +8,14 @@ export default class Synthesizer extends THREE.Group {
   constructor() {
     super();
 
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(100, 100, 100),
-      new THREE.MeshBasicMaterial({ color: '#ff0000' })
-    );
-    this.add(cube);
-
-    for (const note of Range.chromatic(['C2', 'B5'])) {
+    Range.chromatic(['C2', 'B5']).forEach((note, index) => {
       console.log('!note', note, Note.freq(note));
-    }
+      const key = new THREE.Mesh();
+      key.geometry = new THREE.BoxGeometry(10, 5, 50);
+      key.material = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+      key.position.x = index * (10 + 2);
+      this.add(key);
+    });
   }
 
   static async init(): Promise<void> {
