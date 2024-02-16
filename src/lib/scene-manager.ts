@@ -26,6 +26,7 @@ export class SceneManager {
     this.controls.rollSpeed = 0.4;
 
     this.synthesizer = new Synthesizer();
+    this.synthesizer.addPointerListener(this.renderer, this.camera);
     this.scene.add(this.synthesizer);
     this.camera.lookAt(this.synthesizer.position);
 
