@@ -13,8 +13,13 @@ export default class Synthesizer extends THREE.Group {
 
     this.clickedChild = null;
 
+    const audioContext = new AudioContext();
+    const volumeNode = audioContext.createGain();
+    volumeNode.gain.value = 0.2; // TODO: Add UI control for this.
+    volumeNode.connect(audioContext.destination);
+
     Range.chromatic(['C2', 'B5']).map((note, index) => {
-      const key = new Key(note);
+      const key = new Key(note, volumeNode);
       key.position.x = index * (10 + 2);
       this.add(key);
     });
