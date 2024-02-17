@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { FlyControls } from 'three/addons/controls/FlyControls.js';
-import Synthesizer from './synthesizer/synthesizer';
+import { Synthesizer } from './synthesizer';
 
 export class SceneManager {
   private readonly renderer: THREE.Renderer;

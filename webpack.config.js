@@ -52,7 +52,10 @@ module.exports = {
       template: path.join(__dirname, 'src/index.html'),
     }),
     new CopyWebpackPlugin({
-      patterns: [{ from: 'src/fonts', to: 'fonts' }],
+      patterns: [
+        { from: 'src/models', to: 'models' },
+        { from: 'src/fonts', to: 'fonts' },
+      ],
     }),
   ],
 };
