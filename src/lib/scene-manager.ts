@@ -13,10 +13,9 @@ export class SceneManager {
   constructor() {
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     this.camera = new THREE.PerspectiveCamera();
-    this.camera.fov = 55;
-    this.camera.far = 1000;
-    this.camera.position.z = 100;
-    this.camera.position.y = 50;
+    this.camera.fov = 20;
+    this.camera.position.y = 80;
+    this.camera.position.z = 40;
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
 

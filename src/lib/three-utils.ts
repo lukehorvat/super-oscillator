@@ -20,3 +20,11 @@ export function getObjectAtCoord(
   const intersections = raycaster.intersectObjects(objects);
   return intersections[0]?.object ?? null;
 }
+
+/**
+ * Center an object (and if it's a THREE.Group, all of its children).
+ */
+export function centerObject(object: THREE.Object3D): void {
+  const bbox = new THREE.Box3().setFromObject(object);
+  bbox.getCenter(object.position).multiplyScalar(-1);
+}

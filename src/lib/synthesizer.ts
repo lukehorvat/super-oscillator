@@ -1,18 +1,19 @@
 import * as THREE from 'three';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { Note, Scale } from 'tonal';
 import * as ThreeUtils from './three-utils';
 
 export class Synthesizer extends THREE.Group {
-  private static assets: { model: THREE.Group; font: Font };
+  private static assets: { model: GLTF; font: Font };
   private readonly model: THREE.Group;
   private clickedChild?: THREE.Object3D | null;
 
   constructor() {
     super();
 
-    this.model = Synthesizer.assets.model.clone();
+    this.model = Synthesizer.assets.model.scene.clone();
+    ThreeUtils.centerObject(this.model);
     this.add(this.model);
 
     const audioContext = new AudioContext();
@@ -146,11 +147,11 @@ export class Synthesizer extends THREE.Group {
   }
 
   static async loadAssets(): Promise<void> {
-    const modelLoader = new OBJLoader();
+    const modelLoader = new GLTFLoader();
     const fontLoader = new FontLoader();
 
     this.assets = {
-      model: await modelLoader.loadAsync('models/synthesizer.obj'),
+      model: await modelLoader.loadAsync('models/synthesizer.glb'),
       font: await fontLoader.loadAsync('fonts/share-tech-mono.json'),
     };
   }
