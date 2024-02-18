@@ -2,11 +2,20 @@ import * as THREE from 'three';
 import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { Note, Scale } from 'tonal';
+import wrapIndex from 'wrap-index';
 import * as ThreeUtils from './three-utils';
+
+const OSCILLATORS: OscillatorType[] = [
+  'sawtooth',
+  'sine',
+  'square',
+  'triangle',
+];
 
 export class Synthesizer extends THREE.Group {
   private static assets: { model: GLTF; font: Font };
   private readonly model: THREE.Group;
+  private oscillatorType: OscillatorType;
   private clickedChild?: THREE.Object3D | null;
 
   constructor() {
@@ -15,6 +24,8 @@ export class Synthesizer extends THREE.Group {
     this.model = Synthesizer.assets.model.scene.clone();
     ThreeUtils.centerObject(this.model);
     this.add(this.model);
+
+    this.oscillatorType = 'sawtooth';
 
     const audioContext = new AudioContext();
     const volumeNode = audioContext.createGain();
@@ -28,7 +39,7 @@ export class Synthesizer extends THREE.Group {
       gateNode.connect(volumeNode);
 
       const oscillatorNode = audioContext.createOscillator();
-      oscillatorNode.type = 'sawtooth';
+      oscillatorNode.type = this.oscillatorType;
       oscillatorNode.frequency.value = note.freq!;
       oscillatorNode.connect(gateNode);
       oscillatorNode.start();
@@ -108,6 +119,13 @@ export class Synthesizer extends THREE.Group {
     if (this.keys.includes(this.clickedChild)) {
       const gateNode: GainNode = this.clickedChild.userData.gateNode;
       gateNode.gain.setTargetAtTime(1, gateNode.context.currentTime, 0.02);
+    } else if (
+      this.nextButton === this.clickedChild ||
+      this.previousButton === this.clickedChild
+    ) {
+      const oscillatorIndex = OSCILLATORS.indexOf(this.oscillatorType);
+      const increment = this.clickedChild === this.nextButton ? 1 : -1;
+      this.oscillatorType = wrapIndex(oscillatorIndex + increment, OSCILLATORS);
     }
   }
 
@@ -117,6 +135,14 @@ export class Synthesizer extends THREE.Group {
     if (this.keys.includes(this.clickedChild)) {
       const gateNode: GainNode = this.clickedChild.userData.gateNode;
       gateNode.gain.setTargetAtTime(0, gateNode.context.currentTime, 0.01);
+    } else if (
+      this.nextButton === this.clickedChild ||
+      this.previousButton === this.clickedChild
+    ) {
+      console.log(
+        this.oscillatorType,
+        OSCILLATORS.indexOf(this.oscillatorType)
+      );
     }
 
     this.clickedChild = null;
