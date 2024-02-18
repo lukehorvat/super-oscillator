@@ -37,11 +37,21 @@ export class SceneManager {
   }
 
   private animate(): void {
-    // const delta = this.clock.getDelta();
+    const delta = this.clock.getDelta();
+    this.animateSynthesizer(delta);
     this.syncRendererSize();
     this.syncCameraDistance();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
+  }
+
+  /**
+   * Move the synthesizer until it reaches its resting position.
+   */
+  private animateSynthesizer(delta: number): void {
+    if (this.synthesizer.rotation.x < THREE.MathUtils.degToRad(45)) {
+      this.synthesizer.rotation.x += THREE.MathUtils.degToRad(15) * delta;
+    }
   }
 
   /**
