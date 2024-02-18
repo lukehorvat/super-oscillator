@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { FlyControls } from 'three/addons/controls/FlyControls.js';
 import { Synthesizer } from './synthesizer';
 
 export class SceneManager {
@@ -7,7 +6,6 @@ export class SceneManager {
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly clock: THREE.Clock;
-  private readonly controls: FlyControls;
   private readonly synthesizer: Synthesizer;
 
   constructor() {
@@ -18,11 +16,6 @@ export class SceneManager {
     this.camera.position.z = 50;
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
-
-    this.controls = new FlyControls(this.camera, this.renderer.domElement);
-    this.controls.dragToLook = true;
-    this.controls.movementSpeed = 100;
-    this.controls.rollSpeed = 0.4;
 
     this.synthesizer = new Synthesizer();
     this.synthesizer.addPointerListener(this.renderer, this.camera);
@@ -46,8 +39,7 @@ export class SceneManager {
   }
 
   private animate(): void {
-    const delta = this.clock.getDelta();
-    this.controls.update(delta);
+    // const delta = this.clock.getDelta();
     this.syncRendererSize();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
