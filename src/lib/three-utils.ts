@@ -22,9 +22,61 @@ export function getObjectAtCoord(
 }
 
 /**
- * Center an object (and if it's a THREE.Group, all of its children).
+ * Center an object.
  */
 export function centerObject(object: THREE.Object3D): void {
   const bbox = new THREE.Box3().setFromObject(object);
   bbox.getCenter(object.position).multiplyScalar(-1);
+}
+
+/**
+ * Calculate the size of an object.
+ */
+export function getObjectSize(object: THREE.Object3D): {
+  width: number;
+  height: number;
+  depth: number;
+} {
+  const bbox = new THREE.Box3().setFromObject(object);
+  const size = new THREE.Vector3();
+  bbox.getSize(size);
+  return { width: size.x, height: size.y, depth: size.z };
+}
+
+/**
+ * Calculate the distance from the camera to a specified frustum width.
+ */
+export function getDistanceToFrustumWidth(
+  width: number,
+  camera: THREE.PerspectiveCamera
+): number {
+  const height = width / camera.aspect;
+  return getDistanceToFrustumHeight(height, camera);
+}
+
+/**
+ * Calculate the distance from the camera to a specified frustum height.
+ */
+export function getDistanceToFrustumHeight(
+  height: number,
+  camera: THREE.PerspectiveCamera
+): number {
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  return height / (tan * 2);
+}
+
+/**
+ * Calculate the frustum size at a specified distance from the camera.
+ */
+export function getFrustumSizeAtDistance(
+  distance: number,
+  camera: THREE.PerspectiveCamera
+): {
+  width: number;
+  height: number;
+} {
+  const tan = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+  const height = tan * 2 * distance;
+  const width = height * camera.aspect;
+  return { width, height };
 }

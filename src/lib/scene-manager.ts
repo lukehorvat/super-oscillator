@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as ThreeUtils from './three-utils';
 import { Synthesizer } from './synthesizer';
 
 export class SceneManager {
@@ -12,15 +13,12 @@ export class SceneManager {
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     this.camera = new THREE.PerspectiveCamera();
     this.camera.fov = 20;
-    this.camera.position.y = 80;
-    this.camera.position.z = 50;
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
 
     this.synthesizer = new Synthesizer();
     this.synthesizer.addPointerListener(this.renderer, this.camera);
     this.scene.add(this.synthesizer);
-    this.camera.lookAt(this.synthesizer.position);
 
     const ambientLight = new THREE.AmbientLight('#ffffff');
     this.scene.add(ambientLight);
@@ -41,6 +39,7 @@ export class SceneManager {
   private animate(): void {
     // const delta = this.clock.getDelta();
     this.syncRendererSize();
+    this.syncCameraDistance();
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
   }
@@ -58,5 +57,19 @@ export class SceneManager {
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
     }
+  }
+
+  /**
+   * Position the camera at a distance that allows the entire width of the
+   * synthesizer to be visible.
+   */
+  private syncCameraDistance(): void {
+    const { width } = ThreeUtils.getObjectSize(this.synthesizer);
+    const padding = 10; // Some padding for a bit of empty space on the sides...
+    const distance = ThreeUtils.getDistanceToFrustumWidth(
+      width + padding,
+      this.camera
+    );
+    this.camera.position.z = distance;
   }
 }
