@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { Note, Scale } from 'tonal';
+import { NoteLiteral, Range, Scale } from 'tonal';
 import wrapIndex from 'wrap-index';
 import * as ThreeUtils from './three-utils';
+import { OscillationGraph } from './oscillation-graph';
 
 const OSCILLATORS: OscillatorType[] = [
   'sawtooth',
@@ -15,6 +16,7 @@ const OSCILLATORS: OscillatorType[] = [
 export class Synthesizer extends THREE.Group {
   private static assets: { model: GLTF; font: Font };
   private readonly model: THREE.Group;
+  private readonly oscillationGraph: OscillationGraph;
   private oscillatorType: OscillatorType;
   private clickedChild?: THREE.Object3D | null;
 
@@ -25,30 +27,13 @@ export class Synthesizer extends THREE.Group {
     ThreeUtils.centerObject(this.model);
     this.add(this.model);
 
+    const range = Range.numeric([0, this.keys.length - 1]);
+    const notes: NoteLiteral[] = range.map(Scale.steps('C2 chromatic'));
+    this.keys.forEach((key, i) => (key.userData.note = notes[i]));
+
+    this.oscillationGraph = new OscillationGraph(notes);
     this.oscillatorType = 'sawtooth';
-
-    const audioContext = new AudioContext();
-    const volumeNode = audioContext.createGain();
-    volumeNode.gain.value = 0.2; // TODO: Add UI control for this.
-    volumeNode.connect(audioContext.destination);
-
-    let note = Note.get('C2');
-    this.keys.forEach((key) => {
-      const gateNode = audioContext.createGain();
-      gateNode.gain.value = 0;
-      gateNode.connect(volumeNode);
-
-      const oscillatorNode = audioContext.createOscillator();
-      oscillatorNode.type = this.oscillatorType;
-      oscillatorNode.frequency.value = note.freq!;
-      oscillatorNode.connect(gateNode);
-      oscillatorNode.start();
-
-      key.userData.gateNode = gateNode;
-      note = Note.get(
-        Note.simplify(Scale.get([note.name, 'chromatic']).notes[1])
-      );
-    });
+    this.oscillationGraph.openOscillatorGates(this.oscillatorType);
   }
 
   addPointerListener(
@@ -117,15 +102,13 @@ export class Synthesizer extends THREE.Group {
     if (!this.clickedChild) return;
 
     if (this.keys.includes(this.clickedChild)) {
-      const gateNode: GainNode = this.clickedChild.userData.gateNode;
-      gateNode.gain.setTargetAtTime(1, gateNode.context.currentTime, 0.02);
+      const note: NoteLiteral = this.clickedChild.userData.note;
+      this.oscillationGraph.openNoteGate(note);
     } else if (
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
-      const oscillatorIndex = OSCILLATORS.indexOf(this.oscillatorType);
-      const increment = this.clickedChild === this.nextButton ? 1 : -1;
-      this.oscillatorType = wrapIndex(oscillatorIndex + increment, OSCILLATORS);
+      // TODO: Clear screen text.
     }
   }
 
@@ -133,12 +116,18 @@ export class Synthesizer extends THREE.Group {
     if (!this.clickedChild) return;
 
     if (this.keys.includes(this.clickedChild)) {
-      const gateNode: GainNode = this.clickedChild.userData.gateNode;
-      gateNode.gain.setTargetAtTime(0, gateNode.context.currentTime, 0.01);
+      const note: NoteLiteral = this.clickedChild.userData.note;
+      this.oscillationGraph.closeNoteGate(note);
     } else if (
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
+      const oscillatorIndex = OSCILLATORS.indexOf(this.oscillatorType);
+      const increment = this.clickedChild === this.nextButton ? 1 : -1;
+      this.oscillatorType = wrapIndex(oscillatorIndex + increment, OSCILLATORS);
+      this.oscillationGraph.openOscillatorGates(this.oscillatorType);
+
+      // TODO: Show screen text.
       console.log(
         this.oscillatorType,
         OSCILLATORS.indexOf(this.oscillatorType)
