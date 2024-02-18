@@ -15,7 +15,7 @@ export class SceneManager {
     this.camera = new THREE.PerspectiveCamera();
     this.camera.fov = 20;
     this.camera.position.y = 80;
-    this.camera.position.z = 40;
+    this.camera.position.z = 50;
     this.scene = new THREE.Scene();
     this.clock = new THREE.Clock();
 
@@ -29,11 +29,15 @@ export class SceneManager {
     this.scene.add(this.synthesizer);
     this.camera.lookAt(this.synthesizer.position);
 
-    const ambientLight = new THREE.AmbientLight('#dddddd');
+    const ambientLight = new THREE.AmbientLight('#ffffff');
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight('#ffffff');
-    this.scene.add(directionalLight);
+    const spotLight = new THREE.SpotLight('#ffffff');
+    spotLight.position.y = 80;
+    spotLight.position.z = -40;
+    spotLight.decay = 0;
+    spotLight.intensity = 1 * Math.PI;
+    this.scene.add(spotLight);
   }
 
   render(containerEl: Element): void {
