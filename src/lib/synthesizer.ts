@@ -124,14 +124,12 @@ export class Synthesizer extends THREE.Group {
 
   private get keys(): THREE.Object3D[] {
     const keyNameRegex = /^key_(\d+)$/;
-    return this.model.children
-      .filter((child) => child.name.match(keyNameRegex))
-      .sort((key1, key2) => {
-        return (
-          Number(key1.name.match(keyNameRegex)![1]) -
-          Number(key2.name.match(keyNameRegex)![1])
-        );
-      });
+    return this.model.getObjectByName('keys')!.children.sort((key1, key2) => {
+      return (
+        Number(key1.name.match(keyNameRegex)![1]) -
+        Number(key2.name.match(keyNameRegex)![1])
+      );
+    });
   }
 
   private get previousButton(): THREE.Object3D {
