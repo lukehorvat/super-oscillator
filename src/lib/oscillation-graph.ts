@@ -5,7 +5,8 @@ import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
 export class OscillationGraph {
   private readonly volume: GainNode;
   private readonly reverb: ReverbNode;
-  private readonly gatedNotes: Map<NoteLiteral, GatedNote>;
+  private readonly noteGates: Map<NoteLiteral, GainNode>;
+  private readonly noteOscillators: Map<NoteLiteral, OscillatorNode>;
 
   constructor(notes: NoteLiteral[]) {
     const context = new AudioContext();
@@ -20,88 +21,41 @@ export class OscillationGraph {
     this.volume.gain.value = 0.2; // TODO: Add UI control for this.
     this.volume.connect(this.reverb);
 
-    this.gatedNotes = notes.reduce((map, note) => {
-      return map.set(note, new GatedNote(note, this.volume));
-    }, new Map<NoteLiteral, GatedNote>());
+    this.noteGates = notes.reduce((map, note) => {
+      const noteGate = context.createGain();
+      noteGate.gain.value = 0;
+      noteGate.connect(this.volume);
+      return map.set(note, noteGate);
+    }, new Map<NoteLiteral, GainNode>());
+
+    this.noteOscillators = new Map<NoteLiteral, OscillatorNode>();
   }
 
   openNoteGate(note: NoteLiteral): void {
-    this.gatedNotes.get(note)!.openGate();
+    const noteGate = this.noteGates.get(note)!;
+    noteGate.gain.setTargetAtTime(1, noteGate.context.currentTime, 0.02);
   }
 
   closeNoteGate(note: NoteLiteral): void {
-    this.gatedNotes.get(note)!.closeGate();
+    const noteGate = this.noteGates.get(note)!;
+    noteGate.gain.setTargetAtTime(0, noteGate.context.currentTime, 0.01);
   }
 
-  openOscillatorGates(oscillatorType: CustomOscillatorType): void {
-    for (const gatedNote of this.gatedNotes.values()) {
-      gatedNote.openOscillatorGate(oscillatorType);
-    }
-  }
-}
-
-class GatedNote {
-  private readonly gate: GainNode;
-  private readonly gatedOscillators: Map<CustomOscillatorType, GatedOscillator>;
-
-  constructor(note: NoteLiteral, outputNode: AudioNode) {
-    this.gate = outputNode.context.createGain();
-    this.gate.gain.value = 0;
-    this.gate.connect(outputNode);
-
-    this.gatedOscillators = (Object.keys(oscillators) as CustomOscillatorType[])
-      .slice(0, 4)
-      .reduce((map, oscillatorType) => {
-        return map.set(
-          oscillatorType,
-          new GatedOscillator(oscillatorType, Note.freq(note)!, this.gate)
-        );
-      }, new Map<CustomOscillatorType, GatedOscillator>());
-  }
-
-  openGate(): void {
-    this.gate.gain.setTargetAtTime(1, this.gate.context.currentTime, 0.02);
-  }
-
-  closeGate(): void {
-    this.gate.gain.setTargetAtTime(0, this.gate.context.currentTime, 0.01);
-  }
-
-  openOscillatorGate(oscillatorType: CustomOscillatorType): void {
-    for (const [type, gatedOscillator] of this.gatedOscillators) {
-      if (oscillatorType === type) {
-        gatedOscillator.openGate();
-      } else {
-        gatedOscillator.closeGate();
+  rebuildOscillators(oscillatorType: CustomOscillatorType): void {
+    for (const [note, noteGate] of this.noteGates) {
+      // Destroy current oscillator.
+      let noteOscillator = this.noteOscillators.get(note);
+      if (noteOscillator) {
+        noteOscillator.stop();
+        noteOscillator.disconnect(noteGate);
       }
+
+      // Replace with new oscillator.
+      noteOscillator = oscillators[oscillatorType](noteGate.context);
+      noteOscillator.frequency.value = Note.freq(note)!;
+      noteOscillator.connect(noteGate);
+      noteOscillator.start();
+      this.noteOscillators.set(note, noteOscillator);
     }
-  }
-}
-
-class GatedOscillator {
-  private readonly gate: GainNode;
-  private readonly oscillator: OscillatorNode;
-
-  constructor(
-    oscillatorType: CustomOscillatorType,
-    frequency: number,
-    outputNode: AudioNode
-  ) {
-    this.gate = outputNode.context.createGain();
-    this.gate.gain.value = 0;
-    this.gate.connect(outputNode);
-
-    this.oscillator = oscillators[oscillatorType](outputNode.context);
-    this.oscillator.frequency.value = frequency;
-    this.oscillator.connect(this.gate);
-    this.oscillator.start();
-  }
-
-  openGate(): void {
-    this.gate.gain.setTargetAtTime(1, this.gate.context.currentTime, 0.02);
-  }
-
-  closeGate(): void {
-    this.gate.gain.setTargetAtTime(0, this.gate.context.currentTime, 0.01);
   }
 }

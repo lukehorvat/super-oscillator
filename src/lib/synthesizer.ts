@@ -25,9 +25,9 @@ export class Synthesizer extends THREE.Group {
     const notes: NoteLiteral[] = range.map(Scale.steps('C2 chromatic'));
     this.keys.forEach((key, i) => (key.userData.note = notes[i]));
 
-    this.oscillationGraph = new OscillationGraph(notes);
     this.oscillatorType = 'sine';
-    this.oscillationGraph.openOscillatorGates(this.oscillatorType);
+    this.oscillationGraph = new OscillationGraph(notes);
+    this.oscillationGraph.rebuildOscillators(this.oscillatorType);
   }
 
   addPointerListener(
@@ -116,22 +116,19 @@ export class Synthesizer extends THREE.Group {
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
-      const oscillatorTypes = (
-        Object.keys(oscillators) as CustomOscillatorType[]
-      ).slice(0, 4);
+      const oscillatorTypes = Object.keys(
+        oscillators
+      ) as CustomOscillatorType[];
       const oscillatorIndex = oscillatorTypes.indexOf(this.oscillatorType);
       const increment = this.clickedChild === this.nextButton ? 1 : -1;
       this.oscillatorType = wrapIndex(
         oscillatorIndex + increment,
         oscillatorTypes
       );
-      this.oscillationGraph.openOscillatorGates(this.oscillatorType);
+      this.oscillationGraph.rebuildOscillators(this.oscillatorType);
 
       // TODO: Show screen text.
-      console.log(
-        this.oscillatorType,
-        oscillatorTypes.indexOf(this.oscillatorType)
-      );
+      console.log(this.oscillatorType);
     }
 
     this.clickedChild = null;
