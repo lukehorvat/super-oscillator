@@ -1,13 +1,6 @@
 import { Note, NoteLiteral } from 'tonal';
 import Reverb, { ReverbNode } from 'soundbank-reverb';
-
-// TODO: Replace with web-audio-oscillators
-const OSCILLATORS: OscillatorType[] = [
-  'sawtooth',
-  'sine',
-  'square',
-  'triangle',
-];
+import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
 
 export class OscillationGraph {
   private readonly volume: GainNode;
@@ -40,7 +33,7 @@ export class OscillationGraph {
     this.gatedNotes.get(note)!.closeGate();
   }
 
-  openOscillatorGates(oscillatorType: OscillatorType): void {
+  openOscillatorGates(oscillatorType: CustomOscillatorType): void {
     for (const gatedNote of this.gatedNotes.values()) {
       gatedNote.openOscillatorGate(oscillatorType);
     }
@@ -49,19 +42,21 @@ export class OscillationGraph {
 
 class GatedNote {
   private readonly gate: GainNode;
-  private readonly gatedOscillators: Map<OscillatorType, GatedOscillator>;
+  private readonly gatedOscillators: Map<CustomOscillatorType, GatedOscillator>;
 
   constructor(note: NoteLiteral, outputNode: AudioNode) {
     this.gate = outputNode.context.createGain();
     this.gate.gain.value = 0;
     this.gate.connect(outputNode);
 
-    this.gatedOscillators = OSCILLATORS.reduce((map, oscillatorType) => {
-      return map.set(
-        oscillatorType,
-        new GatedOscillator(oscillatorType, Note.freq(note)!, this.gate)
-      );
-    }, new Map<OscillatorType, GatedOscillator>());
+    this.gatedOscillators = (Object.keys(oscillators) as CustomOscillatorType[])
+      .slice(0, 4)
+      .reduce((map, oscillatorType) => {
+        return map.set(
+          oscillatorType,
+          new GatedOscillator(oscillatorType, Note.freq(note)!, this.gate)
+        );
+      }, new Map<CustomOscillatorType, GatedOscillator>());
   }
 
   openGate(): void {
@@ -72,7 +67,7 @@ class GatedNote {
     this.gate.gain.setTargetAtTime(0, this.gate.context.currentTime, 0.01);
   }
 
-  openOscillatorGate(oscillatorType: OscillatorType): void {
+  openOscillatorGate(oscillatorType: CustomOscillatorType): void {
     for (const [type, gatedOscillator] of this.gatedOscillators) {
       if (oscillatorType === type) {
         gatedOscillator.openGate();
@@ -88,7 +83,7 @@ class GatedOscillator {
   private readonly oscillator: OscillatorNode;
 
   constructor(
-    oscillatorType: OscillatorType,
+    oscillatorType: CustomOscillatorType,
     frequency: number,
     outputNode: AudioNode
   ) {
@@ -96,8 +91,7 @@ class GatedOscillator {
     this.gate.gain.value = 0;
     this.gate.connect(outputNode);
 
-    this.oscillator = outputNode.context.createOscillator();
-    this.oscillator.type = oscillatorType;
+    this.oscillator = oscillators[oscillatorType](outputNode.context);
     this.oscillator.frequency.value = frequency;
     this.oscillator.connect(this.gate);
     this.oscillator.start();

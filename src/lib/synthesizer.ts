@@ -5,19 +5,13 @@ import { NoteLiteral, Range, Scale } from 'tonal';
 import wrapIndex from 'wrap-index';
 import * as ThreeUtils from './three-utils';
 import { OscillationGraph } from './oscillation-graph';
-
-const OSCILLATORS: OscillatorType[] = [
-  'sawtooth',
-  'sine',
-  'square',
-  'triangle',
-];
+import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
 
 export class Synthesizer extends THREE.Group {
   private static assets: { model: GLTF; font: Font };
   private readonly model: THREE.Group;
   private readonly oscillationGraph: OscillationGraph;
-  private oscillatorType: OscillatorType;
+  private oscillatorType: CustomOscillatorType;
   private clickedChild?: THREE.Object3D | null;
 
   constructor() {
@@ -32,7 +26,7 @@ export class Synthesizer extends THREE.Group {
     this.keys.forEach((key, i) => (key.userData.note = notes[i]));
 
     this.oscillationGraph = new OscillationGraph(notes);
-    this.oscillatorType = 'sawtooth';
+    this.oscillatorType = 'sine';
     this.oscillationGraph.openOscillatorGates(this.oscillatorType);
   }
 
@@ -122,15 +116,21 @@ export class Synthesizer extends THREE.Group {
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
-      const oscillatorIndex = OSCILLATORS.indexOf(this.oscillatorType);
+      const oscillatorTypes = (
+        Object.keys(oscillators) as CustomOscillatorType[]
+      ).slice(0, 4);
+      const oscillatorIndex = oscillatorTypes.indexOf(this.oscillatorType);
       const increment = this.clickedChild === this.nextButton ? 1 : -1;
-      this.oscillatorType = wrapIndex(oscillatorIndex + increment, OSCILLATORS);
+      this.oscillatorType = wrapIndex(
+        oscillatorIndex + increment,
+        oscillatorTypes
+      );
       this.oscillationGraph.openOscillatorGates(this.oscillatorType);
 
       // TODO: Show screen text.
       console.log(
         this.oscillatorType,
-        OSCILLATORS.indexOf(this.oscillatorType)
+        oscillatorTypes.indexOf(this.oscillatorType)
       );
     }
 
