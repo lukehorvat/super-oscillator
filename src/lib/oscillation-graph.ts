@@ -1,4 +1,5 @@
 import { Note, NoteLiteral } from 'tonal';
+import Reverb, { ReverbNode } from 'soundbank-reverb';
 
 // TODO: Replace with web-audio-oscillators
 const OSCILLATORS: OscillatorType[] = [
@@ -10,14 +11,21 @@ const OSCILLATORS: OscillatorType[] = [
 
 export class OscillationGraph {
   private readonly volume: GainNode;
+  private readonly reverb: ReverbNode;
   private readonly gatedNotes: Map<NoteLiteral, GatedNote>;
 
   constructor(notes: NoteLiteral[]) {
     const context = new AudioContext();
 
+    this.reverb = Reverb(context);
+    this.reverb.time = 1;
+    this.reverb.wet.value = 0.8;
+    this.reverb.dry.value = 0.6;
+    this.reverb.connect(context.destination);
+
     this.volume = context.createGain();
     this.volume.gain.value = 0.2; // TODO: Add UI control for this.
-    this.volume.connect(context.destination);
+    this.volume.connect(this.reverb);
 
     this.gatedNotes = notes.reduce((map, note) => {
       return map.set(note, new GatedNote(note, this.volume));
