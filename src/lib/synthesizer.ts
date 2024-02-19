@@ -8,7 +8,10 @@ import { OscillationGraph } from './oscillation-graph';
 import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
 
 export class Synthesizer extends THREE.Group {
+  private static readonly keyPressHeight = 0.6;
+  private static readonly buttonPressHeight = 0.3;
   private static assets: { model: GLTF; font: Font };
+
   private readonly model: THREE.Group;
   private readonly oscillationGraph: OscillationGraph;
   private oscillatorType: CustomOscillatorType;
@@ -96,12 +99,14 @@ export class Synthesizer extends THREE.Group {
     if (!this.clickedChild) return;
 
     if (this.keys.includes(this.clickedChild)) {
+      this.clickedChild.position.y -= Synthesizer.keyPressHeight;
       const note: NoteLiteral = this.clickedChild.userData.note;
       this.oscillationGraph.openNoteGate(note);
     } else if (
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
+      this.clickedChild.position.y -= Synthesizer.buttonPressHeight;
       // TODO: Clear screen text.
     }
   }
@@ -110,12 +115,14 @@ export class Synthesizer extends THREE.Group {
     if (!this.clickedChild) return;
 
     if (this.keys.includes(this.clickedChild)) {
+      this.clickedChild.position.y += Synthesizer.keyPressHeight;
       const note: NoteLiteral = this.clickedChild.userData.note;
       this.oscillationGraph.closeNoteGate(note);
     } else if (
       this.nextButton === this.clickedChild ||
       this.previousButton === this.clickedChild
     ) {
+      this.clickedChild.position.y += Synthesizer.buttonPressHeight;
       const oscillatorTypes = Object.keys(
         oscillators
       ) as CustomOscillatorType[];
