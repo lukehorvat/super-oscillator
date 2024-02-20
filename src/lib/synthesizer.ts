@@ -30,7 +30,7 @@ export class Synthesizer extends THREE.Group {
     const notes: NoteLiteral[] = range.map(Scale.steps('C2 chromatic'));
     this.keys.forEach((key, i) => (key.userData.note = notes[i]));
 
-    this.oscillatorType = 'sine';
+    this.oscillatorType = 'organ';
     this.oscillationGraph = new OscillationGraph(notes);
     this.oscillationGraph.rebuildOscillators(this.oscillatorType);
 
