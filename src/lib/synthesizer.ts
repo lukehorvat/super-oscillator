@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTF, GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { Font, FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { NoteLiteral, Range, Scale } from 'tonal';
 import wrapIndex from 'wrap-index';
 import * as ThreeUtils from './three-utils';
@@ -15,6 +16,7 @@ export class Synthesizer extends THREE.Group {
   private readonly model: THREE.Group;
   private readonly oscillationGraph: OscillationGraph;
   private oscillatorType: CustomOscillatorType;
+  private screenText?: THREE.Mesh | null;
   private clickedChild?: THREE.Object3D | null;
 
   constructor() {
@@ -31,6 +33,8 @@ export class Synthesizer extends THREE.Group {
     this.oscillatorType = 'sine';
     this.oscillationGraph = new OscillationGraph(notes);
     this.oscillationGraph.rebuildOscillators(this.oscillatorType);
+
+    this.setScreenText();
   }
 
   addPointerListener(
@@ -107,7 +111,7 @@ export class Synthesizer extends THREE.Group {
       this.previousButton === this.clickedChild
     ) {
       this.clickedChild.position.y -= Synthesizer.buttonPressHeight;
-      // TODO: Clear screen text.
+      this.clearScreenText();
     }
   }
 
@@ -133,12 +137,44 @@ export class Synthesizer extends THREE.Group {
         oscillatorTypes
       );
       this.oscillationGraph.rebuildOscillators(this.oscillatorType);
-
-      // TODO: Show screen text.
-      console.log(this.oscillatorType);
+      this.setScreenText();
     }
 
     this.clickedChild = null;
+  }
+
+  private setScreenText(): void {
+    this.screenText = new THREE.Mesh();
+    this.screenText.geometry = new TextGeometry(
+      this.oscillatorType.toUpperCase(),
+      {
+        font: Synthesizer.assets.font,
+        size: 1.5,
+        height: 0.1,
+      }
+    ).center();
+    this.screenText.material = new THREE.MeshPhysicalMaterial({
+      color: '#ff6600',
+      emissive: '#bb3300',
+      reflectivity: 0,
+      metalness: 0,
+    });
+    this.screenText.rotation.x = -THREE.MathUtils.degToRad(90);
+
+    const screenHeight = 0.1; // TODO: Instead of hardcoding, calculate screen height in a way that's unaffected by synthesizer rotation.
+    const screenTextHeight = ThreeUtils.getObjectSize(this.screenText).height;
+    this.screenText.position.x = this.screen.position.x;
+    this.screenText.position.y =
+      this.screen.position.y + screenHeight / 2 + screenTextHeight / 2;
+    this.screenText.position.z = this.screen.position.z;
+    this.model.add(this.screenText);
+  }
+
+  private clearScreenText(): void {
+    if (this.screenText) {
+      this.model.remove(this.screenText);
+      this.screenText = null;
+    }
   }
 
   private get keys(): THREE.Object3D[] {
