@@ -19,9 +19,7 @@ export function render(containerEl: Element): Promise<void> {
     forkLink.href = 'https://github.com/lukehorvat/super-oscillator';
     descriptionEl.appendChild(forkLink);
 
-    const textEnd = document.createTextNode(
-      ' 3D music synthesizer for the Web.'
-    );
+    const textEnd = document.createTextNode(' 3D synthesizer for the Web.');
     descriptionEl.appendChild(textEnd);
 
     const startButton = document.createElement('button');
