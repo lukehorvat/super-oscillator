@@ -1,45 +1,30 @@
 {
   "private": true,
   "scripts": {
-    "start": "./node_modules/.bin/gulp watch"
+    "start": "webpack serve --mode development --devtool=eval-source-map",
+    "build": "webpack --mode production",
+    "lint": "eslint src"
   },
   "dependencies": {
-    "core-js": "3.6.4",
-    "soundbank-reverb": "1.1.2",
-    "three": "0.86.0",
-    "three-window-resize": "1.0.4",
-    "tonal": "0.69.9",
-    "web-audio-oscillators": "1.0.4",
-    "wrap-index": "1.1.0"
+    "soundbank-reverb": "^1.1.2",
+    "three": "0.161.0",
+    "tonal": "^6.0.0",
+    "web-audio-oscillators": "^1.0.4",
+    "wrap-index": "^1.1.0"
   },
   "devDependencies": {
-    "@babel/core": "7.8.3",
-    "@babel/plugin-proposal-function-bind": "7.8.3",
-    "@babel/preset-env": "7.8.3",
-    "@babel/register": "7.8.3",
-    "babel-plugin-transform-inline-environment-variables": "0.4.3",
-    "babelify": "10.0.0",
-    "browserify": "13.3.0",
-    "del": "2.2.0",
-    "express": "4.13.4",
-    "get-wanted-dependencies": "1.1.1",
-    "gulp": "3.9.1",
-    "gulp-autoprefixer": "6.1.0",
-    "gulp-clean-css": "2.0.4",
-    "gulp-filter": "4.0.0",
-    "gulp-if": "2.0.0",
-    "gulp-inject": "4.0.0",
-    "gulp-livereload": "3.8.1",
-    "gulp-rename": "1.2.2",
-    "gulp-rev": "7.0.0",
-    "gulp-sass": "2.2.0",
-    "gulp-uglify": "3.0.1",
-    "gulp-util": "3.0.7",
-    "gulp-watch": "4.3.5",
-    "rememberify": "1.0.1",
-    "run-sequence": "1.1.5",
-    "uglify-es": "3.3.9",
-    "vinyl-buffer": "1.0.0",
-    "vinyl-source-stream": "1.1.0"
+    "@types/three": "0.161.2",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.7.2",
+    "eslint": "^8.46.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.1",
+    "ts-loader": "^9.4.1",
+    "typescript": "^5.1.6",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1"
   }
 }

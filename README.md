@@ -4,7 +4,7 @@
   <img src="https://i.imgur.com/QqcEvAT.gif">
 </p>
 
-An interactive, 3D music synthesizer for the Web!
+An interactive 3D synthesizer for the Web.
 
 Live version hosted [here](https://oscillator.js.org).
 
