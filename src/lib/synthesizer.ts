@@ -6,7 +6,10 @@ import { NoteLiteral, Range, Scale } from 'tonal';
 import wrapIndex from 'wrap-index';
 import * as ThreeUtils from './three-utils';
 import { OscillationGraph } from './oscillation-graph';
-import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
+import {
+  CustomOscillatorType,
+  customOscillatorTypes,
+} from 'web-audio-oscillators';
 
 export class Synthesizer extends THREE.Group {
   private static readonly keyPressHeight = 0.6;
@@ -127,14 +130,10 @@ export class Synthesizer extends THREE.Group {
       this.previousButton === this.clickedChild
     ) {
       this.clickedChild.position.y += Synthesizer.buttonPressHeight;
-      const oscillatorTypes = Object.keys(
-        oscillators
-      ) as CustomOscillatorType[];
-      const oscillatorIndex = oscillatorTypes.indexOf(this.oscillatorType);
       const increment = this.clickedChild === this.nextButton ? 1 : -1;
       this.oscillatorType = wrapIndex(
-        oscillatorIndex + increment,
-        oscillatorTypes
+        customOscillatorTypes.indexOf(this.oscillatorType) + increment,
+        customOscillatorTypes
       );
       this.oscillationGraph.rebuildOscillators(this.oscillatorType);
       this.setScreenText();

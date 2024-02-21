@@ -1,6 +1,6 @@
 import { Note, NoteLiteral } from 'tonal';
 import Reverb, { ReverbNode } from 'soundbank-reverb';
-import oscillators, { CustomOscillatorType } from 'web-audio-oscillators';
+import { CustomOscillatorType, customOscillators } from 'web-audio-oscillators';
 
 export class OscillationGraph {
   private readonly volume: GainNode;
@@ -51,7 +51,7 @@ export class OscillationGraph {
       }
 
       // Replace with new oscillator.
-      noteOscillator = oscillators[oscillatorType](noteGate.context);
+      noteOscillator = customOscillators[oscillatorType](noteGate.context);
       noteOscillator.frequency.value = Note.freq(note)!;
       noteOscillator.connect(noteGate);
       noteOscillator.start();
