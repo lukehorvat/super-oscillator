@@ -20,7 +20,6 @@ export class Synthesizer extends THREE.Group {
   private readonly oscillationGraph: OscillationGraph;
   private oscillatorType: CustomOscillatorType;
   private screenText?: THREE.Mesh | null;
-  private clickedChild?: THREE.Object3D | null;
 
   constructor() {
     super();
@@ -31,115 +30,176 @@ export class Synthesizer extends THREE.Group {
 
     const range = Range.numeric([0, this.keys.length - 1]);
     const notes: NoteLiteral[] = range.map(Scale.steps('C2 chromatic'));
-    this.keys.forEach((key, i) => (key.userData.note = notes[i]));
-
+    this.keys.forEach((key, i) => {
+      key.userData.note = notes[i];
+    });
+    this.pressables.forEach((pressable) => {
+      pressable.userData.inputSources = new Set<InputSource>();
+    });
     this.oscillatorType = 'organ';
     this.oscillationGraph = new OscillationGraph(notes);
     this.oscillationGraph.rebuildOscillators(this.oscillatorType);
-
     this.setScreenText();
   }
 
-  addPointerListener(
+  addInputListener(
     renderer: THREE.Renderer,
     camera: THREE.PerspectiveCamera
   ): void {
-    const clickableChildren = [
-      ...this.keys,
-      this.previousButton,
-      this.nextButton,
-    ];
-    const canvas = renderer.domElement;
+    window.addEventListener('keydown', this.onKeyDown.bind(this));
+    window.addEventListener('keyup', this.onKeyUp.bind(this));
 
-    canvas.addEventListener('pointerdown', (event) => {
-      // In case the previous pointerdown wasn't followed by a pointerup, force a pointerup now.
-      this.onPointerUp();
-
-      if (event.buttons !== 1) return;
-
-      this.clickedChild = ThreeUtils.getObjectAtCoord(
-        clickableChildren,
-        event.clientX,
-        event.clientY,
-        renderer,
-        camera
-      );
-      this.onPointerDown();
-    });
-
-    canvas.addEventListener('pointerup', () => {
-      this.onPointerUp();
-    });
-
-    canvas.addEventListener('pointermove', (event) => {
-      const child = ThreeUtils.getObjectAtCoord(
-        clickableChildren,
-        event.clientX,
-        event.clientY,
-        renderer,
-        camera
-      );
-      canvas.style.cursor = child ? 'pointer' : 'default';
-
-      // If a key was previously clicked and the pointer has moved to another key, make
-      // that the new "clicked" key. This allows keys to be played in a click+drag manner.
-      if (
-        !!child &&
-        !!this.clickedChild &&
-        child !== this.clickedChild &&
-        this.keys.includes(child) &&
-        this.keys.includes(this.clickedChild)
-      ) {
-        this.onPointerUp();
-        this.clickedChild = child;
-        this.onPointerDown();
-      }
-    });
-
-    canvas.addEventListener('pointerleave', () => {
-      // The pointer left the canvas, so cancel the last click.
-      this.onPointerUp();
-    });
+    renderer.domElement.addEventListener(
+      'pointerdown',
+      this.onPointerDown.bind(this, renderer, camera)
+    );
+    renderer.domElement.addEventListener(
+      'pointerup',
+      this.onPointerUp.bind(this)
+    );
+    renderer.domElement.addEventListener(
+      'pointermove',
+      this.onPointerMove.bind(this, renderer, camera)
+    );
+    renderer.domElement.addEventListener(
+      'pointerleave',
+      this.onPointerUp.bind(this)
+    );
   }
 
-  private onPointerDown(): void {
-    if (!this.clickedChild) return;
+  private onKeyDown(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
 
-    if (this.keys.includes(this.clickedChild)) {
-      this.clickedChild.position.y -= Synthesizer.keyPressHeight;
-      const note: NoteLiteral = this.clickedChild.userData.note;
-      this.oscillationGraph.openNoteGate(note);
-    } else if (
-      this.nextButton === this.clickedChild ||
-      this.previousButton === this.clickedChild
-    ) {
-      this.clickedChild.position.y -= Synthesizer.buttonPressHeight;
-      this.clearScreenText();
+    const pressable = this.getPressableFromKeyCode(event.code);
+    if (pressable) {
+      this.pressDown(pressable, InputSource.Keyboard);
+      event.preventDefault(); // Key was handled so prevent any bubbling.
+    }
+  }
+
+  private onKeyUp(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+
+    const pressable = this.getPressableFromKeyCode(event.code);
+    if (pressable) {
+      this.pressUp(pressable, InputSource.Keyboard);
+      event.preventDefault(); // Key was handled so prevent any bubbling.
+    }
+  }
+
+  private onPointerDown(
+    renderer: THREE.Renderer,
+    camera: THREE.PerspectiveCamera,
+    event: PointerEvent
+  ): void {
+    // In case the previous pointerdown wasn't followed by a pointerup, clean up.
+    this.onPointerUp();
+
+    if (event.buttons !== 1) return;
+
+    const pressable = ThreeUtils.getObjectAtCoord(
+      this.pressables,
+      event.clientX,
+      event.clientY,
+      renderer,
+      camera
+    );
+
+    if (pressable) {
+      this.pressDown(pressable, InputSource.Pointer);
     }
   }
 
   private onPointerUp(): void {
-    if (!this.clickedChild) return;
+    this.pressables.forEach((pressable) => {
+      this.pressUp(pressable, InputSource.Pointer);
+    });
+  }
 
-    if (this.keys.includes(this.clickedChild)) {
-      this.clickedChild.position.y += Synthesizer.keyPressHeight;
-      const note: NoteLiteral = this.clickedChild.userData.note;
-      this.oscillationGraph.closeNoteGate(note);
-    } else if (
-      this.nextButton === this.clickedChild ||
-      this.previousButton === this.clickedChild
-    ) {
-      this.clickedChild.position.y += Synthesizer.buttonPressHeight;
-      const increment = this.clickedChild === this.nextButton ? 1 : -1;
-      this.oscillatorType = wrapIndex(
-        customOscillatorTypes.indexOf(this.oscillatorType) + increment,
-        customOscillatorTypes
-      );
-      this.oscillationGraph.rebuildOscillators(this.oscillatorType);
-      this.setScreenText();
+  private onPointerMove(
+    renderer: THREE.Renderer,
+    camera: THREE.PerspectiveCamera,
+    event: PointerEvent
+  ): void {
+    const pressable = ThreeUtils.getObjectAtCoord(
+      this.pressables,
+      event.clientX,
+      event.clientY,
+      renderer,
+      camera
+    );
+    renderer.domElement.style.cursor = pressable ? 'pointer' : 'default';
+
+    // If a synthesizer key was previously clicked and the pointer has moved to
+    // another key, make that the new "clicked" key. This allows keys to be
+    // played in a click + drag manner.
+    if (pressable && this.keys.includes(pressable)) {
+      const currentKey = this.keys.find((key) => {
+        const inputSources = key.userData.inputSources as Set<InputSource>;
+        return inputSources.has(InputSource.Pointer);
+      });
+
+      if (currentKey && currentKey !== pressable) {
+        this.pressUp(currentKey, InputSource.Pointer);
+        this.pressDown(pressable, InputSource.Pointer);
+      }
+    }
+  }
+
+  /**
+   * Signal the intent from an input source to press a key on the synthesizer.
+   */
+  private pressDown(pressable: THREE.Object3D, inputSource: InputSource): void {
+    const inputSources = pressable.userData.inputSources as Set<InputSource>;
+
+    // Only perform the press down if this is the first input source to connect to
+    // the pressable.
+    if (inputSources.size === 0) {
+      if (this.keys.includes(pressable)) {
+        pressable.position.y -= Synthesizer.keyPressHeight;
+        this.oscillationGraph.openNoteGate(
+          pressable.userData.note as NoteLiteral
+        );
+      } else if ([this.nextButton, this.previousButton].includes(pressable)) {
+        pressable.position.y -= Synthesizer.buttonPressHeight;
+        this.clearScreenText();
+      }
     }
 
-    this.clickedChild = null;
+    inputSources.add(inputSource);
+  }
+
+  /**
+   * Signal the intent from an input source to release a key on the synthesizer.
+   */
+  private pressUp(pressable: THREE.Object3D, inputSource: InputSource): void {
+    const inputSources = pressable.userData.inputSources as Set<InputSource>;
+
+    // Only perform the press up if this is the last input source to disconnect
+    // from the pressable.
+    if (inputSources.size === 1 && inputSources.has(inputSource)) {
+      if (this.keys.includes(pressable)) {
+        pressable.position.y += Synthesizer.keyPressHeight;
+        this.oscillationGraph.closeNoteGate(
+          pressable.userData.note as NoteLiteral
+        );
+      } else if ([this.nextButton, this.previousButton].includes(pressable)) {
+        pressable.position.y += Synthesizer.buttonPressHeight;
+        const increment = pressable === this.nextButton ? 1 : -1;
+        this.oscillatorType = wrapIndex(
+          customOscillatorTypes.indexOf(this.oscillatorType) + increment,
+          customOscillatorTypes
+        );
+        this.oscillationGraph.rebuildOscillators(this.oscillatorType);
+        this.setScreenText();
+      }
+    }
+
+    inputSources.delete(inputSource);
   }
 
   private setScreenText(): void {
@@ -176,6 +236,56 @@ export class Synthesizer extends THREE.Group {
     }
   }
 
+  private getPressableFromKeyCode(keyCode: string): THREE.Object3D | null {
+    switch (keyCode) {
+      case 'ArrowRight':
+        return this.nextButton;
+      case 'ArrowLeft':
+        return this.previousButton;
+      default: {
+        const semitoneKeyCodes = [
+          // 1st octave
+          'KeyZ',
+          'KeyS',
+          'KeyX',
+          'KeyD',
+          'KeyC',
+          'KeyV',
+          'KeyG',
+          'KeyB',
+          'KeyH',
+          'KeyN',
+          'KeyJ',
+          'KeyM',
+          // 2nd octave
+          'KeyE',
+          'Digit4',
+          'KeyR',
+          'Digit5',
+          'KeyT',
+          'KeyY',
+          'Digit7',
+          'KeyU',
+          'Digit8',
+          'KeyI',
+          'Digit9',
+          'KeyO',
+        ];
+
+        const semitone = semitoneKeyCodes.indexOf(keyCode);
+        if (semitone >= 0) {
+          return this.keys[12 + semitone];
+        }
+
+        return null;
+      }
+    }
+  }
+
+  private get pressables(): THREE.Object3D[] {
+    return [...this.keys, this.previousButton, this.nextButton];
+  }
+
   private get keys(): THREE.Object3D[] {
     const keyNameRegex = /^key_(\d+)$/;
     return this.model.getObjectByName('keys')!.children.sort((key1, key2) => {
@@ -207,4 +317,9 @@ export class Synthesizer extends THREE.Group {
       font: await fontLoader.loadAsync('fonts/share-tech-mono.json'),
     };
   }
+}
+
+enum InputSource {
+  Keyboard = 1,
+  Pointer = 2,
 }

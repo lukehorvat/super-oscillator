@@ -17,7 +17,7 @@ export class SceneManager {
     this.clock = new THREE.Clock();
 
     this.synthesizer = new Synthesizer();
-    this.synthesizer.addPointerListener(this.renderer, this.camera);
+    this.synthesizer.addInputListener(this.renderer, this.camera);
     this.scene.add(this.synthesizer);
 
     const ambientLight = new THREE.AmbientLight('#ffffff');
