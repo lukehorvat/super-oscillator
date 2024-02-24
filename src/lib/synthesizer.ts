@@ -38,7 +38,7 @@ export class Synthesizer extends THREE.Group {
     });
     this.oscillatorType = 'organ';
     this.oscillationGraph = new OscillationGraph(notes);
-    this.oscillationGraph.rebuildOscillators(this.oscillatorType);
+    this.oscillationGraph.setOscillatorType(this.oscillatorType);
     this.setScreenText();
   }
 
@@ -151,13 +151,13 @@ export class Synthesizer extends THREE.Group {
   }
 
   /**
-   * Signal the intent from an input source to press a key on the synthesizer.
+   * Signal the intent from an input source to press an object on the synthesizer.
+   *
+   * The object will only be pressed if no other input sources are pressing it.
    */
   private pressDown(pressable: THREE.Object3D, inputSource: InputSource): void {
     const inputSources = pressable.userData.inputSources as Set<InputSource>;
 
-    // Only perform the press down if this is the first input source to connect to
-    // the pressable.
     if (inputSources.size === 0) {
       if (this.keys.includes(pressable)) {
         pressable.position.y -= Synthesizer.keyPressHeight;
@@ -174,13 +174,13 @@ export class Synthesizer extends THREE.Group {
   }
 
   /**
-   * Signal the intent from an input source to release a key on the synthesizer.
+   * Signal the intent from an input source to unpress an object on the synthesizer.
+   *
+   * The object will only be unpressed if no other input sources are pressing it.
    */
   private pressUp(pressable: THREE.Object3D, inputSource: InputSource): void {
     const inputSources = pressable.userData.inputSources as Set<InputSource>;
 
-    // Only perform the press up if this is the last input source to disconnect
-    // from the pressable.
     if (inputSources.size === 1 && inputSources.has(inputSource)) {
       if (this.keys.includes(pressable)) {
         pressable.position.y += Synthesizer.keyPressHeight;
@@ -194,7 +194,7 @@ export class Synthesizer extends THREE.Group {
           customOscillatorTypes.indexOf(this.oscillatorType) + increment,
           customOscillatorTypes
         );
-        this.oscillationGraph.rebuildOscillators(this.oscillatorType);
+        this.oscillationGraph.setOscillatorType(this.oscillatorType);
         this.setScreenText();
       }
     }

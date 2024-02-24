@@ -31,17 +31,26 @@ export class OscillationGraph {
     this.noteOscillators = new Map<NoteLiteral, OscillatorNode>();
   }
 
+  /**
+   * Open a note's gate, allowing its connected oscillator to be heard.
+   */
   openNoteGate(note: NoteLiteral): void {
     const noteGate = this.noteGates.get(note)!;
     noteGate.gain.setTargetAtTime(1, noteGate.context.currentTime, 0.02);
   }
 
+  /**
+   * Close a note's gate, effectively muting its connected oscillator.
+   */
   closeNoteGate(note: NoteLiteral): void {
     const noteGate = this.noteGates.get(note)!;
     noteGate.gain.setTargetAtTime(0, noteGate.context.currentTime, 0.01);
   }
 
-  rebuildOscillators(oscillatorType: CustomOscillatorType): void {
+  /**
+   * Change the connected oscillator type for all notes.
+   */
+  setOscillatorType(oscillatorType: CustomOscillatorType): void {
     for (const [note, noteGate] of this.noteGates) {
       // Destroy current oscillator.
       let noteOscillator = this.noteOscillators.get(note);

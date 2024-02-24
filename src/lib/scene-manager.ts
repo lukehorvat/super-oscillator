@@ -35,6 +35,9 @@ export class SceneManager {
     requestAnimationFrame(this.animate.bind(this));
   }
 
+  /**
+   * Render the current frame.
+   */
   private animate(): void {
     const delta = this.clock.getDelta();
 
