@@ -37,17 +37,19 @@ export class SceneManager {
 
   private animate(): void {
     const delta = this.clock.getDelta();
-    this.animateSynthesizer(delta);
+
     this.syncRendererSize();
-    this.syncCameraDistance();
+    this.rotateSynthesizerUntilRest(delta);
+    this.maintainSafeCameraDistance();
+
     this.renderer.render(this.scene, this.camera);
     requestAnimationFrame(this.animate.bind(this));
   }
 
   /**
-   * Move the synthesizer until it reaches its resting position.
+   * Rotate the synthesizer until it reaches its resting position.
    */
-  private animateSynthesizer(delta: number): void {
+  private rotateSynthesizerUntilRest(delta: number): void {
     const restRotation = THREE.MathUtils.degToRad(45);
 
     if (this.synthesizer.rotation.x === restRotation) {
@@ -66,6 +68,20 @@ export class SceneManager {
   }
 
   /**
+   * Position the camera at a distance that allows the entire width of the
+   * synthesizer to be visible.
+   */
+  private maintainSafeCameraDistance(): void {
+    const { width } = ThreeUtils.getObjectSize(this.synthesizer);
+    const padding = 10; // Some padding for a bit of empty space on the sides...
+    const distance = ThreeUtils.getDistanceToFrustumWidth(
+      width + padding,
+      this.camera
+    );
+    this.camera.position.z = distance;
+  }
+
+  /**
    * Sync the renderer size with the current canvas size.
    */
   private syncRendererSize(): void {
@@ -78,19 +94,5 @@ export class SceneManager {
       this.camera.aspect = width / height;
       this.camera.updateProjectionMatrix();
     }
-  }
-
-  /**
-   * Position the camera at a distance that allows the entire width of the
-   * synthesizer to be visible.
-   */
-  private syncCameraDistance(): void {
-    const { width } = ThreeUtils.getObjectSize(this.synthesizer);
-    const padding = 10; // Some padding for a bit of empty space on the sides...
-    const distance = ThreeUtils.getDistanceToFrustumWidth(
-      width + padding,
-      this.camera
-    );
-    this.camera.position.z = distance;
   }
 }
