@@ -76,7 +76,7 @@ export class SceneManager {
    */
   private maintainSafeCameraDistance(): void {
     const { width } = ThreeUtils.getObjectSize(this.synthesizer);
-    const padding = 10; // Some padding for a bit of empty space on the sides...
+    const padding = 5; // Some padding for a bit of empty space on the sides...
     const distance = ThreeUtils.getDistanceToFrustumWidth(
       width + padding,
       this.camera
