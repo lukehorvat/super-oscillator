@@ -17,7 +17,6 @@ export class SceneManager {
     this.clock = new THREE.Clock();
 
     this.synthesizer = new Synthesizer();
-    this.synthesizer.addInputListener(this.renderer, this.camera);
     this.scene.add(this.synthesizer);
 
     const ambientLight = new THREE.AmbientLight('#ffffff');
@@ -49,8 +48,20 @@ export class SceneManager {
    * Move the synthesizer until it reaches its resting position.
    */
   private animateSynthesizer(delta: number): void {
-    if (this.synthesizer.rotation.x < THREE.MathUtils.degToRad(45)) {
-      this.synthesizer.rotation.x += THREE.MathUtils.degToRad(15) * delta;
+    const restRotation = THREE.MathUtils.degToRad(45);
+
+    if (this.synthesizer.rotation.x === restRotation) {
+      return;
+    }
+
+    this.synthesizer.rotation.x = Math.min(
+      this.synthesizer.rotation.x + THREE.MathUtils.degToRad(15) * delta,
+      restRotation
+    );
+
+    // Enable input now if the resting position was just reached.
+    if (this.synthesizer.rotation.x === restRotation) {
+      this.synthesizer.addInputListener(this.renderer, this.camera);
     }
   }
 
