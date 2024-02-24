@@ -24,7 +24,7 @@ export class SceneManager {
 
     const spotLight = new THREE.SpotLight('#ffffff');
     spotLight.position.y = 300;
-    spotLight.position.z = 30;
+    spotLight.position.z = 40;
     spotLight.decay = 0;
     spotLight.intensity = 1 * Math.PI;
     this.scene.add(spotLight);
