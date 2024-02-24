@@ -6,7 +6,7 @@ Open-source 3D synthesizer for the Web.
 
 ![](https://i.imgur.com/QqcEvAT.gif)
 
-Uses [three.js](https://threejs.org) and [web-audio-oscillators](https://github.com/lukehorvat/web-audio-oscillators).
+Uses [three.js](https://threejs.org) + [tonal](https://github.com/tonaljs/tonal) + [web-audio-oscillators](https://github.com/lukehorvat/web-audio-oscillators).
 
 ## Setup
 
