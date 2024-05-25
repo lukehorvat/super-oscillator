@@ -3,7 +3,7 @@ import * as ThreeUtils from './three-utils';
 import { Synthesizer } from './synthesizer';
 
 export class SceneManager {
-  private readonly renderer: THREE.Renderer;
+  private readonly renderer: THREE.WebGLRenderer;
   private readonly camera: THREE.PerspectiveCamera;
   private readonly scene: THREE.Scene;
   private readonly clock: THREE.Clock;
@@ -11,6 +11,7 @@ export class SceneManager {
 
   constructor() {
     this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.camera = new THREE.PerspectiveCamera();
     this.camera.fov = 20;
     this.scene = new THREE.Scene();
@@ -39,14 +40,14 @@ export class SceneManager {
    * Render the current frame.
    */
   private animate(): void {
-    const delta = this.clock.getDelta();
+    requestAnimationFrame(this.animate.bind(this));
 
+    const delta = this.clock.getDelta();
     this.syncRendererSize();
     this.rotateSynthesizerUntilRest(delta);
     this.maintainSafeCameraDistance();
 
     this.renderer.render(this.scene, this.camera);
-    requestAnimationFrame(this.animate.bind(this));
   }
 
   /**
